@@ -17,8 +17,9 @@
 #define RANGEBAR_HIGH 6
 #define RANGEBAR_LOW 7
 #define RANGEBAR_CLOSE 8
-#define RANGEBAR_BAR_OPEN_TIME 9
-#define RANGEBAR_TICK_VOLUME 10
+#define RANGEBAR_COLOR_CODE 9
+#define RANGEBAR_BAR_OPEN_TIME 10
+#define RANGEBAR_TICK_VOLUME 11
 
 #include <RangeBarSettings.mqh>
 
