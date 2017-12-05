@@ -36,16 +36,16 @@ double                   ExtSlowMaBuffer[];
 double                   ExtMacdBuffer[];
 
 //
-// Initialize MedianRenko indicator for data processing 
-// according to settings of the MedianRenko indicator already on chart
+//
 //
 
-#include <RangeBarIndicator.mqh>
+#include <AZ-INVEST/SDK/RangeBarIndicator.mqh>
 RangeBarIndicator rangeBarsIndicator;
 
 //
 //
 //
+
 
 //+------------------------------------------------------------------+
 //| Custom indicator initialization function                         |
@@ -84,7 +84,7 @@ int OnCalculate(const int rates_total,const int prev_calculated,
    //
    
    if(!rangeBarsIndicator.OnCalculate(rates_total,prev_calculated,Time))
-      return(rangeBarsIndicator.GetPrevCalculated());
+      return(0);
    
    //
    // Make the following modifications in the code below:

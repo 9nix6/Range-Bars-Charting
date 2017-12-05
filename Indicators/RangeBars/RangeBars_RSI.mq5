@@ -26,13 +26,11 @@ double ExtPosBuffer[];
 double ExtNegBuffer[];
 
 //
-// Initialize MedianRenko indicator for data processing 
-// according to settings of the MedianRenko indicator already on chart
+//
 //
 
-#include <RangeBarIndicator.mqh>
+#include <AZ-INVEST/SDK/RangeBarIndicator.mqh>
 RangeBarIndicator rangeBarsIndicator;
-
 
 //
 //
@@ -79,26 +77,36 @@ int OnCalculate(const int rates_total,const int prev_calculated,
                 const long &Volume[],
                 const int &Spread[])
   {
-  
    //
-   // Precoess data through MedianRenko indicator
+   // Process data through MedianRenko indicator
    //
    
    if(!rangeBarsIndicator.OnCalculate(rates_total,prev_calculated,Time))
-      return(rates_total);
-     
+      return(0);
+   
    //
    // Make the following modifications in the code below:
    //
-   // medianRenkoIndicator.GetPrevCalculated() should be used instead of prev_calculated
-   // medianRenkoIndicator.Open[] should be used instead of open[]
-   // medianRenkoIndicator.Low[] should be used instead of low[]
-   // medianRenkoIndicator.High[] should be used instead of high[]
-   // medianRenkoIndicator.Close[] should be used instead of close[]
-   // if applied_price is used
-   // medianRenkoIndicator.Price[] should be used instead of price[]
+   // rangeBarsIndicator.GetPrevCalculated() should be used instead of prev_calculated
    //
-
+   // rangeBarsIndicator.Open[] should be used instead of open[]
+   // rangeBarsIndicator.Low[] should be used instead of low[]
+   // rangeBarsIndicator.High[] should be used instead of high[]
+   // rangeBarsIndicator.Close[] should be used instead of close[]
+   //
+   // rangeBarsIndicator.IsNewBar (true/false) informs you if a renko brick completed
+   //
+   // rangeBarsIndicator.Time[] shold be used instead of Time[] for checking the renko bar time.
+   // (!) rangeBarsIndicator.SetGetTimeFlag() must be called in OnInit() for rangeBarsIndicator.Time[] to be used
+   //
+   // rangeBarsIndicator.Tick_volume[] should be used instead of TickVolume[]
+   // rangeBarsIndicator.Real_volume[] should be used instead of Volume[]
+   // (!) rangeBarsIndicator.SetGetVolumesFlag() must be called in OnInit() for Tick_volume[] & Real_volume[] to be used
+   //
+   // rangeBarsIndicator.Price[] should be used instead of Price[]
+   // (!) rangeBarsIndicator.SetUseAppliedPriceFlag(ENUM_APPLIED_PRICE _applied_price) must be called in OnInit() for rangeBarsIndicator.Price[] to be used
+   //
+   
    int _prev_calculated = rangeBarsIndicator.GetPrevCalculated();
    
    //

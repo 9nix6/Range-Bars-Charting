@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                         RangeBars.mqh ver:1.47.0 |
+//|                                         RangeBars.mqh ver:2.03.0 |
 //|                                        Copyright 2017, AZ-iNVEST |
 //|                                          http://www.az-invest.eu |
 //+------------------------------------------------------------------+
@@ -7,21 +7,27 @@
 #property link      "http://www.az-invest.eu"
 
 #define RANGEBAR_INDICATOR_NAME "Market\\Range Bars Charting" 
+//#define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay203"
 
-#define RANGEBAR_MA1 0
-#define RANGEBAR_MA2 1
-#define RANGEBAR_CHANNEL_HIGH 2
-#define RANGEBAR_CHANNEL_MID 3
-#define RANGEBAR_CHANNEL_LOW 4
-#define RANGEBAR_OPEN 5
-#define RANGEBAR_HIGH 6
-#define RANGEBAR_LOW 7
-#define RANGEBAR_CLOSE 8
-#define RANGEBAR_COLOR_CODE 9
-#define RANGEBAR_BAR_OPEN_TIME 10
-#define RANGEBAR_TICK_VOLUME 11
+#define RANGEBAR_OPEN            00
+#define RANGEBAR_HIGH            01
+#define RANGEBAR_LOW             02
+#define RANGEBAR_CLOSE           03 
+#define RANGEBAR_BAR_COLOR       04
+#define RANGEBAR_MA1             05
+#define RANGEBAR_MA2             06
+#define RANGEBAR_MA3             07
+#define RANGEBAR_CHANNEL_HIGH    08
+#define RANGEBAR_CHANNEL_MID     09
+#define RANGEBAR_CHANNEL_LOW     10
+#define RANGEBAR_BAR_OPEN_TIME   11
+#define RANGEBAR_TICK_VOLUME     12
+#define RANGEBAR_REAL_VOLUME     13
+#define RANGEBAR_BUY_VOLUME      14
+#define RANGEBAR_SELL_VOLUME     15
+#define RANGEBAR_BUYSELL_VOLUME  16
 
-#include <RangeBarSettings.mqh>
+#include <AZ-INVEST/SDK/RangeBarSettings.mqh>
 
 class RangeBars
 {
@@ -48,15 +54,14 @@ class RangeBars
       
       int GetHandle(void) { return rangeBarsHandle; };
       bool GetMqlRates(MqlRates &ratesInfoArray[], int start, int count);
-      int GetOLHCForIndicatorCalc(double &o[],double &l[],double &h[],double &c[], int start, int count);
-      int GetOLHCAndApplPriceForIndicatorCalc(double &o[],double &l[],double &h[],double &c[],double &price[],ENUM_APPLIED_PRICE applied_price, int start, int count);
-      double CalcAppliedPrice(const MqlRates &_rates, ENUM_APPLIED_PRICE applied_price);
-      double CalcAppliedPrice(const double &o,const double &l,const double &h,const double &c,ENUM_APPLIED_PRICE applied_price);
+      bool GetBuySellVolumeBreakdown(double &buy[], double &sell[], double &buySell[], int start, int count);      
       bool GetMA1(double &MA[], int start, int count);
       bool GetMA2(double &MA[], int start, int count);
+      bool GetMA3(double &MA[], int start, int count);
       bool GetDonchian(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count);
       bool GetBollingerBands(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count);
       bool GetSuperTrend(double &SuperTrendHighArray[], double &SuperTrendArray[], double &SuperTrendLowArray[], int start, int count); 
+      
       bool IsNewBar();
       
    private:
@@ -67,6 +72,7 @@ class RangeBars
 
 RangeBars::RangeBars(void)
 {
+#define CONSTRUCTOR1
    rangeBarSettings = new RangeBarSettings();
    rangeBarsHandle = INVALID_HANDLE;
    rangeBarsSymbol = _Symbol;
@@ -74,6 +80,7 @@ RangeBars::RangeBars(void)
 
 RangeBars::RangeBars(string symbol)
 {
+#define CONSTRUCTOR2
    rangeBarSettings = new RangeBarSettings();
    rangeBarsHandle = INVALID_HANDLE;
    rangeBarsSymbol = symbol;
@@ -103,8 +110,7 @@ int RangeBars::Init()
          }
          else
          {
-            Print("Failed to load indicator settings.");
-            Alert("You need to put the Median Renko indicator on your chart first!");
+            Print("Failed to load indicator settings - RangeBar indicator not on chart");
             return INVALID_HANDLE;
          }
       }   
@@ -128,14 +134,28 @@ int RangeBars::Init()
       #endif
    }   
 
-   RANGEBAR_SETTINGS s = rangeBarSettings.Get();         
+   RANGEBAR_SETTINGS s = rangeBarSettings.GetRangeBarSettings();         
+   CHART_INDICATOR_SETTINGS cis = rangeBarSettings.GetChartIndicatorSettings(); 
 
    //RangeBarSettings.Debug();
    
-   rangeBarsHandle = iCustom(this.rangeBarsSymbol,PERIOD_M1,RANGEBAR_INDICATOR_NAME, 
+   rangeBarsHandle = iCustom(this.rangeBarsSymbol,_Period,RANGEBAR_INDICATOR_NAME, 
                                        s.barSizeInTicks,
-                                       s._startFromDateTime,
+                                       s.atrEnabled,
+                                       //s.atrTimeFrame,
+                                       s.atrPeriod,
+                                       s.atrPercentage,
+                                       s.showNumberOfDays,
                                        s.resetOpenOnNewTradingDay,
+                                       TopBottomPaddingPercentage,
+                                       showPivots,
+                                       pivotPointCalculationType,
+                                       RColor,
+                                       PColor,
+                                       SColor,
+                                       PDHColor,
+                                       PDLColor,
+                                       PDCColor,   
                                        showNextBarLevels,
                                        HighThresholdIndicatorColor,
                                        LowThresholdIndicatorColor,
@@ -147,34 +167,41 @@ int RangeBars::Init()
                                        SendPushNotifications,
                                        SoundFileBull,
                                        SoundFileBear,
-                                       s.MA1on, 
-                                       s.MA1period,
-                                       s.MA1method,
-                                       s.MA1applyTo,
-                                       s.MA1shift,
-                                       s.MA2on,
-                                       s.MA2period,
-                                       s.MA2method,
-                                       s.MA2applyTo,
-                                       s.MA2shift,
-                                       s.ShowChannel,
+                                       cis.MA1on, 
+                                       cis.MA1period,
+                                       cis.MA1method,
+                                       cis.MA1applyTo,
+                                       cis.MA1shift,
+                                       cis.MA2on,
+                                       cis.MA2period,
+                                       cis.MA2method,
+                                       cis.MA2applyTo,
+                                       cis.MA2shift,
+                                       cis.MA3on,
+                                       cis.MA3period,
+                                       cis.MA3method,
+                                       cis.MA3applyTo,
+                                       cis.MA3shift,
+                                       cis.ShowChannel,
                                        "",
-                                       s.DonchianPeriod,
-                                       s.BBapplyTo,
-                                       s.BollingerBandsPeriod,
-                                       s.BollingerBandsDeviations,
-                                       s.SuperTrendPeriod,
-                                       s.SuperTrendMultiplier,
+                                       cis.DonchianPeriod,
+                                       cis.BBapplyTo,
+                                       cis.BollingerBandsPeriod,
+                                       cis.BollingerBandsDeviations,
+                                       cis.SuperTrendPeriod,
+                                       cis.SuperTrendMultiplier,
                                        "",
+                                       DisplayAsBarChart,
                                        UsedInEA);
+
       
     if(rangeBarsHandle == INVALID_HANDLE)
     {
-      Print("RangeBars indicator init failed on error ",GetLastError());
+      Print("RangeBar indicator init failed on error ",GetLastError());
     }
     else
     {
-      Print("RangeBars indicator init OK");
+      Print("RangeBar indicator init OK");
     }
      
     return rangeBarsHandle;
@@ -207,9 +234,9 @@ void RangeBars::Deinit()
       return;
       
    if(IndicatorRelease(rangeBarsHandle))
-      Print("RangeBars indicator handle released");
+      Print("RangeBar indicator handle released");
    else 
-      Print("Failed to release RangeBars indicator handle");
+      Print("Failed to release RangeBar indicator handle");
 }
 
 //
@@ -218,25 +245,21 @@ void RangeBars::Deinit()
 
 bool RangeBars::IsNewBar()
 {
-   MqlRates currentRenko[1];
-   static MqlRates prevRenko;
+   MqlRates currentBar[1];
+   static datetime prevBarTime;
    
-   GetMqlRates(currentRenko,1,1);
+   GetMqlRates(currentBar,0,1);
    
-   if((prevRenko.open != currentRenko[0].open) ||
-      (prevRenko.high != currentRenko[0].high) ||
-      (prevRenko.low != currentRenko[0].low) ||
-      (prevRenko.close != currentRenko[0].close))
+   if(currentBar[0].time == 0)
+      return false;
+   
+   if(prevBarTime < currentBar[0].time)
    {
-      prevRenko.open = currentRenko[0].open;
-      prevRenko.high = currentRenko[0].high;
-      prevRenko.low = currentRenko[0].low;
-      prevRenko.close = currentRenko[0].close;
+      prevBarTime = currentBar[0].time;
       return true;
    }
-   
-   return false;
-}
+
+   return false;}
 
 //
 // Get "count" Renko MqlRates into "ratesInfoArray[]" array starting from "start" bar  
@@ -244,7 +267,7 @@ bool RangeBars::IsNewBar()
 
 bool RangeBars::GetMqlRates(MqlRates &ratesInfoArray[], int start, int count)
 {
-   double o[],l[],h[],c[],time[],tick_volume[];
+   double o[],l[],h[],c[],barColor[],time[],tick_volume[],real_volume[];
 
    if(ArrayResize(o,count) == -1)
       return false;
@@ -254,9 +277,13 @@ bool RangeBars::GetMqlRates(MqlRates &ratesInfoArray[], int start, int count)
       return false;
    if(ArrayResize(c,count) == -1)
       return false;
+   if(ArrayResize(barColor,count) == -1)
+      return false;
    if(ArrayResize(time,count) == -1)
       return false;
    if(ArrayResize(tick_volume,count) == -1)
+      return false;
+   if(ArrayResize(real_volume,count) == -1)
       return false;
 
   
@@ -270,7 +297,11 @@ bool RangeBars::GetMqlRates(MqlRates &ratesInfoArray[], int start, int count)
       return false;
    if(CopyBuffer(rangeBarsHandle,RANGEBAR_BAR_OPEN_TIME,start,count,time) == -1)
       return false;
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_BAR_COLOR,start,count,barColor) == -1)
+      return false;
    if(CopyBuffer(rangeBarsHandle,RANGEBAR_TICK_VOLUME,start,count,tick_volume) == -1)
+      return false;
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_REAL_VOLUME,start,count,real_volume) == -1)
       return false;
 
    if(ArrayResize(ratesInfoArray,count) == -1)
@@ -285,117 +316,72 @@ bool RangeBars::GetMqlRates(MqlRates &ratesInfoArray[], int start, int count)
       ratesInfoArray[tempOffset-i].close = c[i];
       ratesInfoArray[tempOffset-i].time = (datetime)time[i];
       ratesInfoArray[tempOffset-i].tick_volume = (long)tick_volume[i];
+      ratesInfoArray[tempOffset-i].real_volume = (long)real_volume[i];
+      ratesInfoArray[tempOffset-i].spread = (int)barColor[i];
    }
    
    ArrayFree(o);
    ArrayFree(l);
    ArrayFree(h);
    ArrayFree(c);
+   ArrayFree(barColor);
    ArrayFree(time);
    ArrayFree(tick_volume);   
+   ArrayFree(real_volume);  
    
    return true;
 }
-
-//
-// Get "count" Renko MqlRates into "ratesInfoArray[]" array starting from "start" bar  
-//
-
-int RangeBars::GetOLHCForIndicatorCalc(double &o[],double &l[],double &h[],double &c[], int start, int count)
+bool RangeBars::GetBuySellVolumeBreakdown(double &buy[], double &sell[], double &buySell[], int start, int count)
 {
-   if(ArrayResize(o,count) == -1)
+   double b[],s[],bs[];
+   
+   if(ArrayResize(b,count) == -1)
+      return false;
+   if(ArrayResize(s,count) == -1)
+      return false;
+   if(ArrayResize(bs,count) == -1)
       return false;
 
-   int _count = CopyBuffer(rangeBarsHandle,RANGEBAR_OPEN,start,count,o);
-   if(_count == -1)
-      return _count;
-
-
-   if(ArrayResize(o,_count) == -1)
-      return -1;
-   if(ArrayResize(l,_count) == -1)
-      return -1;
-   if(ArrayResize(h,_count) == -1)
-      return -1;
-   if(ArrayResize(c,_count) == -1)
-      return -1;
-  
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_OPEN,start,_count,o) == -1)
-      return -1;
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_LOW,start,_count,l) == -1)
-      return -1;
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_HIGH,start,_count,h) == -1)
-      return -1;
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_CLOSE,start,_count,c) == -1)
-      return -1;
-   
-   return _count;
-}
-
-//
-// Get "count" Renko MqlRates into "ratesInfoArray[]" array starting from "start" bar  
-//
-
-int RangeBars::GetOLHCAndApplPriceForIndicatorCalc(double &o[],double &l[],double &h[],double &c[],double &price[],ENUM_APPLIED_PRICE applied_price, int start, int count)
-{
-   if(ArrayResize(o,count) == -1)
+#ifdef P_RANGEBAR_BR
+   #ifdef P_RANGEBAR_BR_PRO
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_BUY_VOLUME,start,count,b) == -1)
       return false;
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_SELL_VOLUME,start,count,s) == -1)
+      return false;
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_BUYSELL_VOLUME,start,count,bs) == -1)
+      return false;
+   #endif
+#else
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_BUY_VOLUME,start,count,b) == -1)
+      return false;
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_SELL_VOLUME,start,count,s) == -1)
+      return false;
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_BUYSELL_VOLUME,start,count,bs) == -1)
+      return false;
+#endif
 
-   int _count = CopyBuffer(rangeBarsHandle,RANGEBAR_OPEN,start,count,o);
-   if(_count == -1)
-      return _count;
+   if(ArrayResize(buy,count) == -1)
+      return false; 
+   if(ArrayResize(sell,count) == -1)
+      return false; 
+   if(ArrayResize(buySell,count) == -1)
+      return false; 
 
-
-   if(ArrayResize(o,_count) == -1)
-      return -1;
-   if(ArrayResize(l,_count) == -1)
-      return -1;
-   if(ArrayResize(h,_count) == -1)
-      return -1;
-   if(ArrayResize(c,_count) == -1)
-      return -1;
-   if(ArrayResize(price,_count) == -1)
-      return -1;
-  
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_OPEN,start,_count,o) == -1)
-      return -1;
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_LOW,start,_count,l) == -1)
-      return -1;
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_HIGH,start,_count,h) == -1)
-      return -1;
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_CLOSE,start,_count,c) == -1)
-      return -1;
-   
-   if(applied_price == PRICE_CLOSE) 
+   int tempOffset = count-1;
+   for(int i=0; i<count; i++)
    {
-      if(CopyBuffer(rangeBarsHandle,RANGEBAR_CLOSE,start,_count,price) == -1)
-         return -1;
-   }
-   else if(applied_price == PRICE_OPEN) 
-   {
-      if(CopyBuffer(rangeBarsHandle,RANGEBAR_OPEN,start,_count,price) == -1)
-         return -1;
-   }
-   else if(applied_price == PRICE_HIGH) 
-   {
-      if(CopyBuffer(rangeBarsHandle,RANGEBAR_HIGH,start,_count,price) == -1)
-         return -1;
-   }
-   else if(applied_price == PRICE_LOW) 
-   {
-      if(CopyBuffer(rangeBarsHandle,RANGEBAR_LOW,start,_count,price) == -1)
-         return -1;
-   }
-   else
-   {       
-      for(int i=0; i<_count; i++)
-      {
-         price[i] = CalcAppliedPrice(o[i],l[i],h[i],c[i],applied_price);
-      }
+      buy[tempOffset-i] = b[i];
+      sell[tempOffset-i] = s[i];
+      buySell[tempOffset-i] = bs[i];
    }
    
+   ArrayFree(b);
+   ArrayFree(s);
+   ArrayFree(bs);
    
-   return _count;
+   return true;
+
+
 }
 
 //
@@ -449,6 +435,31 @@ bool RangeBars::GetMA2(double &MA[], int start, int count)
 }
 
 //
+// Get "count" MovingAverage3 values into "MA[]" starting from "start" bar  
+//
+
+bool RangeBars::GetMA3(double &MA[], int start, int count)
+{
+   double tempMA[];
+   if(ArrayResize(tempMA,count) == -1)
+      return false;
+
+   if(ArrayResize(MA,count) == -1)
+      return false;
+   
+   if(CopyBuffer(rangeBarsHandle,RANGEBAR_MA3,start,count,tempMA) == -1)
+      return false;
+   
+   for(int i=0; i<count; i++)
+   {
+      MA[count-1-i] = tempMA[i];
+   }
+   
+   ArrayFree(tempMA);   
+   return true;
+}
+
+//
 // Get "count" Renko Donchian channel values into "HighArray[]", "MidArray[]", and "LowArray[]" arrays starting from "start" bar  
 //
 
@@ -484,6 +495,9 @@ bool RangeBars::GetChannel(double &HighArray[], double &MidArray[], double &LowA
 {
    double tempH[], tempM[], tempL[];
 
+#ifdef P_RANGEBAR_BR
+   return false;
+#else
    if(ArrayResize(tempH,count) == -1)
       return false;
    if(ArrayResize(tempM,count) == -1)
@@ -518,48 +532,6 @@ bool RangeBars::GetChannel(double &HighArray[], double &MidArray[], double &LowA
    ArrayFree(tempL);
    
    return true;
+#endif
 }
 
-//
-//  Function used for calculating the Apllied Price based on Renko OLHC values
-//
-
-double RangeBars::CalcAppliedPrice(const MqlRates &_rates, ENUM_APPLIED_PRICE applied_price)
-{
-      if(applied_price == PRICE_CLOSE)
-         return _rates.close;
-      else if (applied_price == PRICE_OPEN)
-         return _rates.open;
-      else if (applied_price == PRICE_HIGH)
-         return _rates.high;
-      else if (applied_price == PRICE_LOW)
-         return _rates.low;
-      else if (applied_price == PRICE_MEDIAN)
-         return (_rates.high + _rates.low) / 2;
-      else if (applied_price == PRICE_TYPICAL)
-         return (_rates.high + _rates.low + _rates.close) / 3;
-      else if (applied_price == PRICE_WEIGHTED)
-         return (_rates.high + _rates.low + _rates.close + _rates.close) / 4;
-         
-      return 0.0;
-}
-
-double RangeBars::CalcAppliedPrice(const double &o,const double &l,const double &h,const double &c, ENUM_APPLIED_PRICE applied_price)
-{
-      if(applied_price == PRICE_CLOSE)
-         return c;
-      else if (applied_price == PRICE_OPEN)
-         return o;
-      else if (applied_price == PRICE_HIGH)
-         return h;
-      else if (applied_price == PRICE_LOW)
-         return l;
-      else if (applied_price == PRICE_MEDIAN)
-         return (h + l) / 2;
-      else if (applied_price == PRICE_TYPICAL)
-         return (h + l + c) / 3;
-      else if (applied_price == PRICE_WEIGHTED)
-         return (h + l + c +c) / 4;
-      
-      return 0.0;
-}
