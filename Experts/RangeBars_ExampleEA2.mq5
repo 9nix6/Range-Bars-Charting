@@ -1,6 +1,6 @@
-#property copyright "Copyright 2017, AZ-iNVEST"
+#property copyright "Copyright 2017-18, AZ-iNVEST"
 #property link      "http://www.az-invest.eu"
-#property version   "1.00"
+#property version   "1.10"
 #property description "Example EA: Trading based on RangeBars SuperTrend signals." 
 #property description "One trade at a time. Each trade has TP & SL" 
 
@@ -61,7 +61,7 @@ CMarketOrder * marketOrder;
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   rangeBars = new RangeBars(); 
+   rangeBars = new RangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true); 
    if(rangeBars == NULL)
       return(INIT_FAILED);
    

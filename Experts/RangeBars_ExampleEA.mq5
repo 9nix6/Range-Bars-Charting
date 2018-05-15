@@ -1,6 +1,6 @@
-#property copyright "Copyright 2017, AZ-iNVEST"
+#property copyright "Copyright 2017-18, AZ-iNVEST"
 #property link      "http://www.az-invest.eu"
-#property version   "2.05"
+#property version   "2.06"
 #property description "Example EA showing the way to use the RangeBars class defined in RangeBars.mqh" 
 
 //
@@ -32,7 +32,7 @@ RangeBars * rangeBars;
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   rangeBars = new RangeBars(); 
+   rangeBars = new RangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
    if(rangeBars == NULL)
       return(INIT_FAILED);
    

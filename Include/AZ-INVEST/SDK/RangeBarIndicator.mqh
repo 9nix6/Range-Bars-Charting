@@ -1,6 +1,9 @@
 #property copyright "Copyright 2017, AZ-iNVEST"
 #property link      "http://www.az-invest.eu"
 #property version   "2.02"
+
+input bool UseOnRangeBarChart = true; // Use this indicator on RangeBar chart
+
 #include <AZ-INVEST/SDK/RangeBars.mqh>
 
 class RangeBarIndicator
@@ -68,7 +71,7 @@ class RangeBarIndicator
 
 RangeBarIndicator::RangeBarIndicator(void)
 {
-   rangeBars = new RangeBars();
+   rangeBars = new RangeBars(UseOnRangeBarChart);
    if(rangeBars != NULL)
       rangeBars.Init();
       
@@ -99,6 +102,7 @@ bool RangeBarIndicator::CheckStatus(void)
 
 bool RangeBarIndicator::NeedsReload(void)
 {
+  
    if(rangeBars.Reload())
    {
      Print("Chart settings changed - reloading indicator with new settings");
@@ -117,8 +121,6 @@ bool RangeBarIndicator::OnCalculate(const int _rates_total,const int _prev_calcu
       Canvas_IsNewBar(_Time); 
       Canvas_RatesTotalChangedBy(_rates_total);   
       IsNewBar = rangeBars.IsNewBar();   
-      
-      firstRun = false;
    }
 
    if(!CheckStatus())
@@ -126,10 +128,12 @@ bool RangeBarIndicator::OnCalculate(const int _rates_total,const int _prev_calcu
       if(rangeBars != NULL)
          delete rangeBars;
       
-      rangeBars = new RangeBars();
+      rangeBars = new RangeBars(UseOnRangeBarChart);
       if(rangeBars != NULL)
          rangeBars.Init();
       
+      Print("CheckStatus block failed");
+            
       return false;
    }
 
@@ -145,14 +149,24 @@ bool RangeBarIndicator::OnCalculate(const int _rates_total,const int _prev_calcu
    ArraySetAsSeries(this.Sell_volume,false);   
    ArraySetAsSeries(this.BuySell_volume,false);   
 
-   bool needsReload  = (NeedsReload() || (!this.dataReady)); 
-      
-   if(needsReload)
+   if(firstRun)
+   {
+      GetOLHC(0,_rates_total);
+      firstRun = false;   
+      NeedsReload();
+   }
+           
+   if(NeedsReload() || !this.dataReady)
    {
       GetOLHC(0,_rates_total);
       this.prev_calculated = 0;
-      return false;
-   }                    
+      
+      if(NeedsReload() || !this.dataReady)
+      {
+         Print("NeedsReload/DataReady block failed");      
+         return false;
+      }      
+   }                                      
          
    /*
    if(needsReload || IsNewBar || canvasIsNewTime || (change != 0))

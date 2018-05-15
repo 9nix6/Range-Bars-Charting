@@ -15,53 +15,60 @@ input int                     atrPercentage = 10;                       // Use p
       ENUM_TICK_PRICE_TYPE    plotPrice = tickBid;                      // Build chart using
 input int                     showNumberOfDays = 14;                    // Show history for number of days
 input ENUM_BOOL               resetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
-input double                  TopBottomPaddingPercentage = 0.30;        // Use padding top/bottom (0.0 - 1.0)
-input ENUM_PIVOT_POINTS       showPivots = ppNone;                      // Show pivot levels
-input ENUM_PIVOT_TYPE         pivotPointCalculationType = ppHLC3;       // Pivot point calculation method
-input color                   RColor = clrDodgerBlue;                   // Resistance line color
-input color                   PColor = clrGold;                         // Pivot line color
-input color                   SColor = clrFireBrick;                    // Support line color   
-input color                   PDHColor = clrHotPink;                    // Previous day's high
-input color                   PDLColor = clrLightSkyBlue;               // Previous day's low
-input color                   PDCColor = clrGainsboro;                  // Previous day's close
-input ENUM_BOOL               showNextBarLevels = true;                 // Show current bar's close projections
-input color                   HighThresholdIndicatorColor = clrLime;    // Bullish bar projection color
-input color                   LowThresholdIndicatorColor = clrRed;      // Bearish bar projection color
-input ENUM_BOOL               showCurrentBarOpenTime = true;            // Display chart info and current bar's open time
-input color                   InfoTextColor = clrWhite;                 // Current bar's open time info color
-input ENUM_BOOL               UseSoundSignalOnNewBar = false;           // Play sound on new bar
-input ENUM_BOOL               OnlySignalReversalBars = false;           // Only signal reversals
-input ENUM_BOOL               UseAlertWindow = false;                   // Display Alert window with new bar info
-input ENUM_BOOL               SendPushNotifications = false;            // Send new bar info push notification to smartphone
-input string                  SoundFileBull = "news.wav";               // Use sound file for bullish bar close
-input string                  SoundFileBear = "timeout.wav";            // Use sound file for bearish bar close
-input ENUM_BOOL               MA1on = false;                            // Show first MA 
-input int                     MA1period = 20;                           // 1st MA period
-input ENUM_MA_METHOD_EXT      MA1method =  _MODE_SMA;                   // 1st MA method
-input ENUM_APPLIED_PRICE      MA1applyTo = PRICE_CLOSE;                 // 1st MA apply to
-input int                     MA1shift = 0;                             // 1st MA shift
-input ENUM_BOOL               MA2on = false;                            // Show second MA 
-input int                     MA2period = 50;                           // 2nd MA period
-input ENUM_MA_METHOD_EXT      MA2method = _MODE_EMA;                    // 2nd MA method
-input ENUM_APPLIED_PRICE      MA2applyTo = PRICE_CLOSE;                 // 2nd MA apply to
-input int                     MA2shift = 0;                             // 2nd MA shift
-input ENUM_BOOL               MA3on = false;                            // Show third MA 
-input int                     MA3period = 20;                           // 3rd MA period
-input ENUM_MA_METHOD_EXT      MA3method = _VWAP_TICKVOL;                // 3rd MA method
-input ENUM_APPLIED_PRICE      MA3applyTo = PRICE_CLOSE;                 // 3rd MA apply to
-input int                     MA3shift = 0;                             // 3rd MA shift
-input ENUM_CHANNEL_TYPE       ShowChannel = None;                       // Show Channel
-input string                  Channel_Settings = "-------------------"; // Channel settings 
-input int                     DonchianPeriod = 20;                      // Donchian Channel period
-input ENUM_APPLIED_PRICE      BBapplyTo = PRICE_CLOSE;                  // Bollinger Bands apply to
-input int                     BollingerBandsPeriod = 20;                // Bollinger Bands period
-input double                  BollingerBandsDeviations = 2.0;           // Bollinger Bands deviations
-input int                     SuperTrendPeriod = 10;                    // Super Trend period
-input double                  SuperTrendMultiplier=1.7;                 // Super Trend multiplier
-input string                  Misc_Settings = "-------------------";    // Misc settings
-input ENUM_BOOL               DisplayAsBarChart = false;                // Display as bar chart
-input ENUM_BOOL               UsedInEA = false;                         // Indicator used in EA via iCustom()
 
+   #ifndef USE_CUSTOM_SYMBOL
+      input double                  TopBottomPaddingPercentage = 0.30;        // Use padding top/bottom (0.0 - 1.0)
+      input ENUM_PIVOT_POINTS       showPivots = ppNone;                      // Show pivot levels
+      input ENUM_PIVOT_TYPE         pivotPointCalculationType = ppHLC3;       // Pivot point calculation method
+      input color                   RColor = clrDodgerBlue;                   // Resistance line color
+      input color                   PColor = clrGold;                         // Pivot line color
+      input color                   SColor = clrFireBrick;                    // Support line color   
+      input color                   PDHColor = clrHotPink;                    // Previous day's high
+      input color                   PDLColor = clrLightSkyBlue;               // Previous day's low
+      input color                   PDCColor = clrGainsboro;                  // Previous day's close
+      input ENUM_BOOL               showNextBarLevels = true;                 // Show current bar's close projections
+      input color                   HighThresholdIndicatorColor = clrLime;    // Bullish bar projection color
+      input color                   LowThresholdIndicatorColor = clrRed;      // Bearish bar projection color
+      input ENUM_BOOL               showCurrentBarOpenTime = true;            // Display chart info and current bar's open time
+      input color                   InfoTextColor = clrWhite;                 // Current bar's open time info color
+      
+      input ENUM_BOOL               NewBarAlert = false;                      // Alert on new a bar
+      input ENUM_BOOL               ReversalBarAlert = false;                 // Alert on reversal bar
+      input ENUM_BOOL               MaCrossAlert = false;                     // Alert on MA crossover
+      input ENUM_BOOL               UseAlertWindow = false;                   // Display alert in Alert Window
+      input ENUM_BOOL               UseSound = false;                         // Play sound on alert
+      input ENUM_BOOL               UsePushNotifications = false;             // Send alert via push notification to a smartphone
+      
+      input string                  SoundFileBull = "news.wav";               // Use sound file for bullish bar close
+      input string                  SoundFileBear = "timeout.wav";            // Use sound file for bearish bar close
+      input ENUM_BOOL               MA1on = false;                            // Show first MA 
+      input int                     MA1period = 20;                           // 1st MA period
+      input ENUM_MA_METHOD_EXT      MA1method =  _MODE_SMA;                   // 1st MA method
+      input ENUM_APPLIED_PRICE      MA1applyTo = PRICE_CLOSE;                 // 1st MA apply to
+      input int                     MA1shift = 0;                             // 1st MA shift
+      input ENUM_BOOL               MA2on = false;                            // Show second MA 
+      input int                     MA2period = 50;                           // 2nd MA period
+      input ENUM_MA_METHOD_EXT      MA2method = _MODE_EMA;                    // 2nd MA method
+      input ENUM_APPLIED_PRICE      MA2applyTo = PRICE_CLOSE;                 // 2nd MA apply to
+      input int                     MA2shift = 0;                             // 2nd MA shift
+      input ENUM_BOOL               MA3on = false;                            // Show third MA 
+      input int                     MA3period = 20;                           // 3rd MA period
+      input ENUM_MA_METHOD_EXT      MA3method = _VWAP_TICKVOL;                // 3rd MA method
+      input ENUM_APPLIED_PRICE      MA3applyTo = PRICE_CLOSE;                 // 3rd MA apply to
+      input int                     MA3shift = 0;                             // 3rd MA shift
+      input ENUM_CHANNEL_TYPE       ShowChannel = None;                       // Show Channel
+      input string                  Channel_Settings = "-------------------"; // Channel settings 
+      input int                     DonchianPeriod = 20;                      // Donchian Channel period
+      input ENUM_APPLIED_PRICE      BBapplyTo = PRICE_CLOSE;                  // Bollinger Bands apply to
+      input int                     BollingerBandsPeriod = 20;                // Bollinger Bands period
+      input double                  BollingerBandsDeviations = 2.0;           // Bollinger Bands deviations
+      input int                     SuperTrendPeriod = 10;                    // Super Trend period
+      input double                  SuperTrendMultiplier=1.7;                 // Super Trend multiplier
+      input string                  Misc_Settings = "-------------------";    // Misc settings
+      input ENUM_BOOL               DisplayAsBarChart = false;                // Display as bar chart
+      input ENUM_BOOL               ShiftObj = false;                         // Shift objects with chart            
+      input ENUM_BOOL               UsedInEA = false;                         // Indicator used in EA via iCustom()
+   #endif 
 #else
 
    //
@@ -82,13 +89,18 @@ input ENUM_BOOL               UsedInEA = false;                         // Indic
       color                      LowThresholdIndicatorColor = clrNONE;
       ENUM_BOOL                  showCurrentBarOpenTime = false;
       color                      InfoTextColor = clrNONE;
-      ENUM_BOOL                  UseSoundSignalOnNewBar = false;
-      ENUM_BOOL                  OnlySignalReversalBars = false;
-      ENUM_BOOL                  UseAlertWindow = false;
-      ENUM_BOOL                  SendPushNotifications = false;
+      
+      ENUM_BOOL                  NewBarAlert = false; 
+      ENUM_BOOL                  ReversalBarAlert = false;
+      ENUM_BOOL                  MaCrossAlert = false;    
+      ENUM_BOOL                  UseAlertWindow = false;  
+      ENUM_BOOL                  UseSound = false;        
+      ENUM_BOOL                  UsePushNotifications = false;
+
       string                     SoundFileBull = "";
       string                     SoundFileBear = "";
       ENUM_BOOL                  DisplayAsBarChart = true;
+      ENUM_BOOL                  ShiftObj = false;      
       ENUM_BOOL                  UsedInEA = true; // This should always be set to TRUE for EAs & Indicators
    
    //
@@ -172,10 +184,11 @@ void RangeBarSettings::Save(void)
    //
    // Store chart type identifier
    //
-   
+   /*
    handle = FileOpen(this.chartTypeFileName,FILE_SHARE_READ|FILE_WRITE|FILE_ANSI);
    FileWriteString(handle,CUSTOM_CHART_NAME);
    FileClose(handle);
+   */
 }
 
 void RangeBarSettings::Delete(void)
@@ -261,7 +274,8 @@ void RangeBarSettings::Set(void)
    //
    //
    //
-      
+   
+   #ifndef USE_CUSTOM_SYMBOL      
    chartIndicatorSettings.MA1on = MA1on;
    chartIndicatorSettings.MA1period = MA1period;
    chartIndicatorSettings.MA1method = MA1method;
@@ -290,6 +304,7 @@ void RangeBarSettings::Set(void)
    chartIndicatorSettings.BollingerBandsDeviations = BollingerBandsDeviations;
    chartIndicatorSettings.SuperTrendPeriod = SuperTrendPeriod;
    chartIndicatorSettings.SuperTrendMultiplier = SuperTrendMultiplier;
+   chartIndicatorSettings.ShiftObj = ShiftObj;
    chartIndicatorSettings.UsedInEA = UsedInEA;
 
    //
@@ -310,14 +325,18 @@ void RangeBarSettings::Set(void)
    alertInfoSettings.LowThresholdIndicatorColor = LowThresholdIndicatorColor;
    alertInfoSettings.showCurrentBarOpenTime = showCurrentBarOpenTime;
    alertInfoSettings.InfoTextColor = InfoTextColor;
-   alertInfoSettings.UseSoundSignalOnNewBar = UseSoundSignalOnNewBar;
-   alertInfoSettings.OnlySignalReversalBars = OnlySignalReversalBars;
-   alertInfoSettings.UseAlertWindow = UseAlertWindow;
-   alertInfoSettings.SendPushNotifications = SendPushNotifications;
+   
+   alertInfoSettings.NewBarAlert = NewBarAlert; 
+   alertInfoSettings.ReversalBarAlert = ReversalBarAlert;
+   alertInfoSettings.MaCrossAlert = MaCrossAlert ;    
+   alertInfoSettings.UseAlertWindow = UseAlertWindow;  
+   alertInfoSettings.UseSound = UseSound;
+   alertInfoSettings.UsePushNotifications = UsePushNotifications;
+   
    alertInfoSettings.SoundFileBull = SoundFileBull;
    alertInfoSettings.SoundFileBear = SoundFileBear;
    alertInfoSettings.DisplayAsBarChart = DisplayAsBarChart;
-
+   #endif
 #endif
 }
 

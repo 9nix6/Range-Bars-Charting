@@ -6,8 +6,8 @@
 #property copyright "Copyright 2017, AZ-iNVEST"
 #property link      "http://www.az-invest.eu"
 
+//#define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay204"
 #define RANGEBAR_INDICATOR_NAME "Market\\Range Bars Charting" 
-//#define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay203"
 
 #define RANGEBAR_OPEN            00
 #define RANGEBAR_HIGH            01
@@ -41,10 +41,12 @@ class RangeBars
       
       int rangeBarsHandle;
       string rangeBarsSymbol;
+      bool usedByIndicatorOnRangeBarChart;
    
    public:
       
       RangeBars();   
+      RangeBars(bool isUsedByIndicatorOnRangeBarChart);
       RangeBars(string symbol);
       ~RangeBars(void);
       
@@ -67,7 +69,7 @@ class RangeBars
    private:
 
       bool GetChannel(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count);
-   
+      int GetIndicatorHandle(void);
 };
 
 RangeBars::RangeBars(void)
@@ -76,6 +78,15 @@ RangeBars::RangeBars(void)
    rangeBarSettings = new RangeBarSettings();
    rangeBarsHandle = INVALID_HANDLE;
    rangeBarsSymbol = _Symbol;
+   usedByIndicatorOnRangeBarChart = false;
+}
+
+RangeBars::RangeBars(bool isUsedByIndicatorOnRangeBarChart)
+{
+   rangeBarSettings = new RangeBarSettings();
+   rangeBarsHandle = INVALID_HANDLE;
+   rangeBarsSymbol = _Symbol;
+   usedByIndicatorOnRangeBarChart = isUsedByIndicatorOnRangeBarChart;
 }
 
 RangeBars::RangeBars(string symbol)
@@ -84,6 +95,7 @@ RangeBars::RangeBars(string symbol)
    rangeBarSettings = new RangeBarSettings();
    rangeBarsHandle = INVALID_HANDLE;
    rangeBarsSymbol = symbol;
+   usedByIndicatorOnRangeBarChart = false;
 }
 
 RangeBars::~RangeBars(void)
@@ -100,6 +112,15 @@ int RangeBars::Init()
 {
    if(!MQLInfoInteger((int)MQL5_TESTING))
    {
+      if(usedByIndicatorOnRangeBarChart) 
+      {
+         //
+         // Indicator on RangeBar chart uses the values of the RangeBar chart for calculations
+         //      
+         rangeBarsHandle = GetIndicatorHandle();
+         return rangeBarsHandle;
+      }
+   
       if(!rangeBarSettings.Load())
       {
          if(rangeBarsHandle != INVALID_HANDLE)
@@ -121,17 +142,28 @@ int RangeBars::Init()
    }
    else
    {
-      #ifdef SHOW_INDICATOR_INPUTS
+      if(usedByIndicatorOnRangeBarChart)
+      {
          //
-         //  Load settings from EA inputs
-         //
-         rangeBarSettings.Load();
-      #else
-         //
-         //  Save indicator inputs for use by EA attached to same chart.
-         //
-         rangeBarSettings.Save();
-      #endif
+         // Indicator on RangeBar chart uses the values of the RangeBar chart for calculations
+         //      
+         rangeBarsHandle = GetIndicatorHandle();
+         return rangeBarsHandle;      
+      }
+      else
+      {     
+         #ifdef SHOW_INDICATOR_INPUTS
+            //
+            //  Load settings from EA inputs
+            //
+            rangeBarSettings.Load();
+         #else
+            //
+            //  Save indicator inputs for use by EA attached to same chart.
+            //
+            rangeBarSettings.Save();
+         #endif
+      }
    }   
 
    RANGEBAR_SETTINGS s = rangeBarSettings.GetRangeBarSettings();         
@@ -161,10 +193,12 @@ int RangeBars::Init()
                                        LowThresholdIndicatorColor,
                                        showCurrentBarOpenTime,
                                        InfoTextColor,
-                                       UseSoundSignalOnNewBar,
-                                       OnlySignalReversalBars,
+                                       NewBarAlert,
+                                       ReversalBarAlert,
+                                       MaCrossAlert,
                                        UseAlertWindow,
-                                       SendPushNotifications,
+                                       UseSound,    
+                                       UsePushNotifications,
                                        SoundFileBull,
                                        SoundFileBear,
                                        cis.MA1on, 
@@ -192,6 +226,7 @@ int RangeBars::Init()
                                        cis.SuperTrendMultiplier,
                                        "",
                                        DisplayAsBarChart,
+                                       ShiftObj,
                                        UsedInEA);
 
       
@@ -233,10 +268,13 @@ void RangeBars::Deinit()
    if(rangeBarsHandle == INVALID_HANDLE)
       return;
       
-   if(IndicatorRelease(rangeBarsHandle))
-      Print("RangeBar indicator handle released");
-   else 
-      Print("Failed to release RangeBar indicator handle");
+   if(!usedByIndicatorOnRangeBarChart)
+   {
+      if(IndicatorRelease(rangeBarsHandle))
+         Print("RangeBar indicator handle released");
+      else 
+         Print("Failed to release RangeBar indicator handle");
+   }
 }
 
 //
@@ -535,3 +573,23 @@ bool RangeBars::GetChannel(double &HighArray[], double &MidArray[], double &LowA
 #endif
 }
 
+int RangeBars::GetIndicatorHandle(void)
+{
+   int i = ChartIndicatorsTotal(0,0);
+   int j=0;
+   string iName;
+   
+   while(j < i)
+   {
+      iName = ChartIndicatorName(0,0,j);
+      if(StringFind(iName,CUSTOM_CHART_NAME) != -1)
+      {
+         Print("Using handle of "+iName);
+         return ChartIndicatorGet(0,0,iName);   
+      }   
+      j++;
+   }
+   
+   Print("Failed getting handle of "+CUSTOM_CHART_NAME);
+   return INVALID_HANDLE;
+}
