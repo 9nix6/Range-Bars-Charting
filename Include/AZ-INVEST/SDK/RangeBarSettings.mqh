@@ -6,15 +6,38 @@
 
 #ifdef SHOW_INDICATOR_INPUTS
 
-input int                     barSizeInTicks = 100;                     // Range bar size (in points)
-input ENUM_BOOL               atrEnabled = false;                       // Enable ATR based bar size calculation
-      ENUM_TIMEFRAMES         atrTimeFrame = PERIOD_D1;                 // Use ATR period
-input int                     atrPeriod = 14;                           // ATR period
-input int                     atrPercentage = 10;                       // Use percentage of ATR
-      ENUM_BOOL               useRealVolume = false;                    // Use real volume ( false for FX )            
-      ENUM_TICK_PRICE_TYPE    plotPrice = tickBid;                      // Build chart using
-input int                     showNumberOfDays = 14;                    // Show history for number of days
-input ENUM_BOOL               resetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
+#ifdef MQL5_MARKET_DEMO
+         int                     barSizeInTicks = 210;                     // Range bar size (in points)
+         ENUM_BOOL               atrEnabled = false;                       // Enable ATR based bar size calculation
+         ENUM_TIMEFRAMES         atrTimeFrame = PERIOD_D1;                 // Use ATR period
+         int                     atrPeriod = 14;                           // ATR period
+         int                     atrPercentage = 10;                       // Use percentage of ATR
+         ENUM_BOOL               useRealVolume = false;                    // Use real volume ( false for FX )            
+         ENUM_TICK_PRICE_TYPE    plotPrice = tickBid;                      // Build chart using
+         int                     showNumberOfDays = 7;                    // Show history for number of days
+         ENUM_BOOL               resetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
+
+   #ifdef USE_CUSTOM_SYMBOL
+         string                  customChartName = "";                  // Override default custom chart name with
+         string                  applyTemplate = "default";             // Apply template to custom chart
+   #endif
+#else
+   input int                     barSizeInTicks = 100;                     // Range bar size (in points)
+   input ENUM_BOOL               atrEnabled = false;                       // Enable ATR based bar size calculation
+         ENUM_TIMEFRAMES         atrTimeFrame = PERIOD_D1;                 // Use ATR period
+   input int                     atrPeriod = 14;                           // ATR period
+   input int                     atrPercentage = 10;                       // Use percentage of ATR
+         ENUM_BOOL               useRealVolume = false;                    // Use real volume ( false for FX )            
+         ENUM_TICK_PRICE_TYPE    plotPrice = tickBid;                      // Build chart using
+   input int                     showNumberOfDays = 14;                    // Show history for number of days
+   input ENUM_BOOL               resetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
+
+   #ifdef USE_CUSTOM_SYMBOL
+      input string                  customChartName = "";                  // Override default custom chart name with
+      input string                  applyTemplate = "default";             // Apply template to custom chart
+   #endif
+#endif
+
 
    #ifndef USE_CUSTOM_SYMBOL
       input double                  TopBottomPaddingPercentage = 0.30;        // Use padding top/bottom (0.0 - 1.0)
@@ -30,7 +53,7 @@ input ENUM_BOOL               resetOpenOnNewTradingDay = true;          // Synch
       input color                   HighThresholdIndicatorColor = clrLime;    // Bullish bar projection color
       input color                   LowThresholdIndicatorColor = clrRed;      // Bearish bar projection color
       input ENUM_BOOL               showCurrentBarOpenTime = true;            // Display chart info and current bar's open time
-      input color                   InfoTextColor = clrWhite;                 // Current bar's open time info color
+      input color                   InfoTextColor = clrNONE;                  // Current bar's open time info color
       
       input ENUM_BOOL               NewBarAlert = false;                      // Alert on new a bar
       input ENUM_BOOL               ReversalBarAlert = false;                 // Alert on reversal bar
@@ -56,7 +79,7 @@ input ENUM_BOOL               resetOpenOnNewTradingDay = true;          // Synch
       input ENUM_MA_METHOD_EXT      MA3method = _VWAP_TICKVOL;                // 3rd MA method
       input ENUM_APPLIED_PRICE      MA3applyTo = PRICE_CLOSE;                 // 3rd MA apply to
       input int                     MA3shift = 0;                             // 3rd MA shift
-      input ENUM_CHANNEL_TYPE       ShowChannel = None;                       // Show Channel
+      input ENUM_CHANNEL_TYPE       ShowChannel = _None;                       // Show Channel
       input string                  Channel_Settings = "-------------------"; // Channel settings 
       input int                     DonchianPeriod = 20;                      // Donchian Channel period
       input ENUM_APPLIED_PRICE      BBapplyTo = PRICE_CLOSE;                  // Bollinger Bands apply to
