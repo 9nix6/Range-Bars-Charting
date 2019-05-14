@@ -6,7 +6,7 @@
 #property copyright "Copyright 2017, AZ-iNVEST"
 #property link      "http://www.az-invest.eu"
 
-//#define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay204"
+//#define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay211"
 #define RANGEBAR_INDICATOR_NAME "Market\\Range Bars Charting" 
 
 #define RANGEBAR_OPEN            00

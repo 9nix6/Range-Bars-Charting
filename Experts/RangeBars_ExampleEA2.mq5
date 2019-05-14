@@ -39,7 +39,7 @@ ulong currentTicket;
 // the RangeBars indicator attached.
 //
 
-//#define SHOW_INDICATOR_INPUTS
+#define SHOW_INDICATOR_INPUTS
 
 //
 // You need to include the RangeBars.mqh header file
