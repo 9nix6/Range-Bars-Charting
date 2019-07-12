@@ -96,7 +96,7 @@ void OnTick()
       double MA1[]; // array to be filled by values of the first moving average
       double MA2[]; // array to be filled by values of the second moving average
       
-      if(rangeBars.GetMA1(MA1,startAtBar,numberOfBars) && rangeBars.GetMA1(MA2,startAtBar,numberOfBars))
+      if(rangeBars.GetMA1(MA1,startAtBar,numberOfBars) && rangeBars.GetMA2(MA2,startAtBar,numberOfBars))
       {
          //
          // Values are stored in the MA1 and MA2 arrays and are now ready for use
