@@ -31,7 +31,7 @@ double         deviation;           // deviation in points
 //
 
 #include <AZ-INVEST/SDK/RangeBarIndicator.mqh>
-RangeBarIndicator rangeBarsIndicator;
+RangeBarIndicator customChartIndicator;
 
 //
 //
@@ -132,16 +132,15 @@ int OnCalculate(const int rates_total,
                 const int &spread[])
   {
    //
-   // Process data through MedianRenko indicator
-   //
-   
-   if(!rangeBarsIndicator.OnCalculate(rates_total,prev_calculated,time))
+
+   if(!customChartIndicator.OnCalculate(rates_total,prev_calculated,time,close))
       return(0);
    
-   int _prev_calculated = rangeBarsIndicator.GetPrevCalculated();
+   if(!customChartIndicator.BufferSynchronizationCheck(close))
+      return(0);
    
-   //
-   //
+   int _prev_calculated = customChartIndicator.GetPrevCalculated();
+   
    //  
    
    int i=0;
@@ -204,12 +203,12 @@ int OnCalculate(const int rates_total,
 //--- searching High and Low
    for(shift=limit;shift<rates_total && !IsStopped();shift++)
      {
-      val=rangeBarsIndicator.Low[iLowest(rangeBarsIndicator.Low,ExtDepth,shift)];
+      val=customChartIndicator.Low[iLowest(customChartIndicator.Low,ExtDepth,shift)];
       if(val==lastlow) val=0.0;
       else
         {
          lastlow=val;
-         if((rangeBarsIndicator.Low[shift]-val)>deviation) val=0.0;
+         if((customChartIndicator.Low[shift]-val)>deviation) val=0.0;
          else
            {
             for(back=1;back<=ExtBackstep;back++)
@@ -219,14 +218,14 @@ int OnCalculate(const int rates_total,
               }
            }
         }
-      if(rangeBarsIndicator.Low[shift]==val) LowMapBuffer[shift]=val; else LowMapBuffer[shift]=0.0;
+      if(customChartIndicator.Low[shift]==val) LowMapBuffer[shift]=val; else LowMapBuffer[shift]=0.0;
       //--- high
-      val=rangeBarsIndicator.High[iHighest(rangeBarsIndicator.High,ExtDepth,shift)];
+      val=customChartIndicator.High[iHighest(customChartIndicator.High,ExtDepth,shift)];
       if(val==lasthigh) val=0.0;
       else
         {
          lasthigh=val;
-         if((val-rangeBarsIndicator.High[shift])>deviation) val=0.0;
+         if((val-customChartIndicator.High[shift])>deviation) val=0.0;
          else
            {
             for(back=1;back<=ExtBackstep;back++)
@@ -236,7 +235,7 @@ int OnCalculate(const int rates_total,
               }
            }
         }
-      if(rangeBarsIndicator.High[shift]==val) HighMapBuffer[shift]=val; else HighMapBuffer[shift]=0.0;
+      if(customChartIndicator.High[shift]==val) HighMapBuffer[shift]=val; else HighMapBuffer[shift]=0.0;
      }
 
 //--- last preparation
@@ -262,7 +261,7 @@ int OnCalculate(const int rates_total,
               {
                if(HighMapBuffer[shift]!=0)
                  {
-                  lasthigh=rangeBarsIndicator.High[shift];
+                  lasthigh=customChartIndicator.High[shift];
                   lasthighpos=shift;
                   whatlookfor=Sill;
                   ZigzagBuffer[shift]=lasthigh;
@@ -270,7 +269,7 @@ int OnCalculate(const int rates_total,
                  }
                if(LowMapBuffer[shift]!=0)
                  {
-                  lastlow=rangeBarsIndicator.Low[shift];
+                  lastlow=customChartIndicator.Low[shift];
                   lastlowpos=shift;
                   whatlookfor=Pike;
                   ZigzagBuffer[shift]=lastlow;

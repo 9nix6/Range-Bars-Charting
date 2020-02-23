@@ -30,7 +30,7 @@ double ExtNegBuffer[];
 //
 
 #include <AZ-INVEST/SDK/RangeBarIndicator.mqh>
-RangeBarIndicator rangeBarsIndicator;
+RangeBarIndicator customChartIndicator;
 
 //
 //
@@ -78,39 +78,15 @@ int OnCalculate(const int rates_total,const int prev_calculated,
                 const int &Spread[])
   {
    //
-   // Process data through MedianRenko indicator
-   //
    
-   if(!rangeBarsIndicator.OnCalculate(rates_total,prev_calculated,Time))
+   if(!customChartIndicator.OnCalculate(rates_total,prev_calculated,Time,Close))
       return(0);
    
-   //
-   // Make the following modifications in the code below:
-   //
-   // rangeBarsIndicator.GetPrevCalculated() should be used instead of prev_calculated
-   //
-   // rangeBarsIndicator.Open[] should be used instead of open[]
-   // rangeBarsIndicator.Low[] should be used instead of low[]
-   // rangeBarsIndicator.High[] should be used instead of high[]
-   // rangeBarsIndicator.Close[] should be used instead of close[]
-   //
-   // rangeBarsIndicator.IsNewBar (true/false) informs you if a renko brick completed
-   //
-   // rangeBarsIndicator.Time[] shold be used instead of Time[] for checking the renko bar time.
-   // (!) rangeBarsIndicator.SetGetTimeFlag() must be called in OnInit() for rangeBarsIndicator.Time[] to be used
-   //
-   // rangeBarsIndicator.Tick_volume[] should be used instead of TickVolume[]
-   // rangeBarsIndicator.Real_volume[] should be used instead of Volume[]
-   // (!) rangeBarsIndicator.SetGetVolumesFlag() must be called in OnInit() for Tick_volume[] & Real_volume[] to be used
-   //
-   // rangeBarsIndicator.Price[] should be used instead of Price[]
-   // (!) rangeBarsIndicator.SetUseAppliedPriceFlag(ENUM_APPLIED_PRICE _applied_price) must be called in OnInit() for rangeBarsIndicator.Price[] to be used
-   //
+   if(!customChartIndicator.BufferSynchronizationCheck(Close))
+      return(0);
    
-   int _prev_calculated = rangeBarsIndicator.GetPrevCalculated();
+   int _prev_calculated = customChartIndicator.GetPrevCalculated();
    
-   //
-   //
    //  
   
    int    i,pos;
@@ -122,7 +98,7 @@ int OnCalculate(const int rates_total,const int prev_calculated,
    ArraySetAsSeries(ExtRSIBuffer,false);
    ArraySetAsSeries(ExtPosBuffer,false);
    ArraySetAsSeries(ExtNegBuffer,false);
-   ArraySetAsSeries(rangeBarsIndicator.Close,false);
+   ArraySetAsSeries(customChartIndicator.Close,false);
 //--- preliminary calculations
    pos=_prev_calculated-1;
    if(pos<=InpRSIPeriod)
@@ -138,7 +114,7 @@ int OnCalculate(const int rates_total,const int prev_calculated,
          ExtRSIBuffer[i]=0.0;
          ExtPosBuffer[i]=0.0;
          ExtNegBuffer[i]=0.0;
-         diff=rangeBarsIndicator.Close[i]-rangeBarsIndicator.Close[i-1];
+         diff=customChartIndicator.Close[i]-customChartIndicator.Close[i-1];
          if(diff>0)
             sump+=diff;
          else
@@ -162,7 +138,7 @@ int OnCalculate(const int rates_total,const int prev_calculated,
 //--- the main loop of calculations
    for(i=pos; i<rates_total && !IsStopped(); i++)
      {
-      diff=rangeBarsIndicator.Close[i]-rangeBarsIndicator.Close[i-1];
+      diff=customChartIndicator.Close[i]-customChartIndicator.Close[i-1];
       ExtPosBuffer[i]=(ExtPosBuffer[i-1]*(InpRSIPeriod-1)+(diff>0.0?diff:0.0))/InpRSIPeriod;
       ExtNegBuffer[i]=(ExtNegBuffer[i-1]*(InpRSIPeriod-1)+(diff<0.0?-diff:0.0))/InpRSIPeriod;
       if(ExtNegBuffer[i]!=0.0)

@@ -1,6 +1,6 @@
-#property copyright "Copyright 2017-18, AZ-iNVEST"
-#property link      "http://www.az-invest.eu"
-#property version   "1.10"
+#property copyright "Copyright 2017-2020, Level Up Software"
+#property link      "https://www.az-invest.eu"
+#property version   "1.11"
 #property description "Example EA: Trading based on RangeBars SuperTrend signals." 
 #property description "One trade at a time. Each trade has TP & SL" 
 
@@ -39,7 +39,7 @@ ulong currentTicket;
 // the RangeBars indicator attached.
 //
 
-//#define SHOW_INDICATOR_INPUTS
+#define SHOW_INDICATOR_INPUTS
 
 //
 // You need to include the RangeBars.mqh header file
@@ -48,12 +48,11 @@ ulong currentTicket;
 #include <AZ-INVEST/SDK/RangeBars.mqh>
 //
 //  To use the RangeBars indicator in your EA you need do instantiate the indicator class (RangeBars)
-//  and call the Init() method in your EA's OnInit() function.
-//  Don't forget to release the indicator when you're done by calling the Deinit() method.
-//  Example shown in OnInit & OnDeinit functions below:
+//  and call the Init() and Deinit() methods in your EA's OnInit() and OnDeinit() functions.
+//  Example shown below
 //
 
-RangeBars * rangeBars;
+RangeBars rangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
 CMarketOrder * marketOrder;
 
 //+------------------------------------------------------------------+
@@ -61,10 +60,6 @@ CMarketOrder * marketOrder;
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   rangeBars = new RangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true); 
-   if(rangeBars == NULL)
-      return(INIT_FAILED);
-   
    rangeBars.Init();
    if(rangeBars.GetHandle() == INVALID_HANDLE)
       return(INIT_FAILED);
@@ -93,11 +88,7 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
 {
-   if(rangeBars != NULL)
-   {
-      rangeBars.Deinit();
-      delete rangeBars;
-   }
+   rangeBars.Deinit();
    
    //
    //  delete MarketOrder class
@@ -130,7 +121,7 @@ void OnTick()
 
       //
       // Getting SuperTrend values is done using the
-      // GetSuperTrend(double &SuperTrendHighArray[], double &SuperTrendArray[], double &SuperTrendLowArray[], int start, int count) 
+      // GetChannel(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count) 
       // method. Example below:
       //
 
@@ -141,7 +132,7 @@ void OnTick()
       int startAtBar   = 1;   // get values starting from the last completed bar.
       int numberOfBars = 2;   // gat a total of 3 values (for 3 bars starting from bar 1 (last completed))     
             
-      if(rangeBars.GetSuperTrend(HighArray,MidArray,LowArray,startAtBar,numberOfBars))
+      if(rangeBars.GetChannel(HighArray,MidArray,LowArray,startAtBar,numberOfBars))
       {
          //
          // Read signal bar's time for optional debug log

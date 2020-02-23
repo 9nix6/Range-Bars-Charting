@@ -1,10 +1,12 @@
-#property copyright "Copyright 2017-18, AZ-iNVEST"
-#property link      "http://www.az-invest.eu"
-#property version   "2.06"
+#property copyright "Copyright 2017-2020, Level Up Software"
+#property link      "https://www.az-invest.eu"
+#property version   "2.07"
 #property description "Example EA showing the way to use the RangeBars class defined in RangeBars.mqh" 
 
+input int InpRSIPeriod = 14; // RSI period
+
 //
-// SHOW_INDICATOR_INPUTS *NEEDS* to be defined, if the EA needs to be *tested in MT5's backtester*
+// SHOW_INDICATOR_INPUTS *NEEDS* to be defined, if the sEA needs to be *tested in MT5's backtester*
 // -------------------------------------------------------------------------------------------------
 // Using '#define SHOW_INDICATOR_INPUTS' will show the RangeBars indicator's inputs 
 // NOT using the '#define SHOW_INDICATOR_INPUTS' statement will read the settigns a chart with 
@@ -20,22 +22,17 @@
 #include <AZ-INVEST/SDK/RangeBars.mqh>
 //
 //  To use the RangeBars indicator in your EA you need do instantiate the indicator class (RangeBars)
-//  and call the Init() method in your EA's OnInit() function.
-//  Don't forget to release the indicator when you're done by calling the Deinit() method.
-//  Example shown in OnInit & OnDeinit functions below:
+//  and call the Init() and Deinit() methods in your EA's OnInit() and OnDeinit() functions.
+//  Example shown below
 //
 
-RangeBars * rangeBars;
+RangeBars rangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   rangeBars = new RangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
-   if(rangeBars == NULL)
-      return(INIT_FAILED);
-   
    rangeBars.Init();
    if(rangeBars.GetHandle() == INVALID_HANDLE)
       return(INIT_FAILED);
@@ -51,11 +48,7 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
 {
-   if(rangeBars != NULL)
-   {
-      rangeBars.Deinit();
-      delete rangeBars;
-   }
+   rangeBars.Deinit();
    
    //
    //  your custom code goes here...
@@ -70,8 +63,22 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
+
+int rsiHandle = INVALID_HANDLE; // Handle for the external RSI indicator
+
 void OnTick()
 {
+   //
+   // Initialize all additional indicators here! (not in the OnInit() function).
+   // Otherwise they will not work in the backtest.
+   // When backtesting please select the "Daily" timeframe.
+   //
+   
+   if(rsiHandle == INVALID_HANDLE)
+   {
+      rsiHandle = iCustom(_Symbol, _Period, "RangeBars\\RangeBars_RSI", InpRSIPeriod, true);
+   }
+
    //
    // It is considered good trading & EA coding practice to perform calculations
    // when a new bar is fully formed. 
@@ -96,7 +103,7 @@ void OnTick()
       double MA1[]; // array to be filled by values of the first moving average
       double MA2[]; // array to be filled by values of the second moving average
       
-      if(rangeBars.GetMA1(MA1,startAtBar,numberOfBars) && rangeBars.GetMA2(MA2,startAtBar,numberOfBars))
+      if(rangeBars.GetMA(RANGEBAR_MA1, MA1, startAtBar, numberOfBars) && rangeBars.GetMA(RANGEBAR_MA2, MA2, startAtBar, numberOfBars))
       {
          //
          // Values are stored in the MA1 and MA2 arrays and are now ready for use
@@ -182,64 +189,23 @@ void OnTick()
       }
       
       //
-      // Getting Donchain channel values is done using the
-      // GetDonchian(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count) 
-      // method. Example below:
+      // Getting the values of the channel indicator (Donchain, Bullinger Bands, Keltner or Super Trend) is done using
+      // GetChannel(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count) 
+      // Example below:
       //
       
-      double HighArray[];  // This array will store the values of the high band
-      double MidArray[];   // This array will store the values of the middle band
-      double LowArray[];   // This array will store the values of the low band
+      double HighArray[];  // This array will store the values of the channel's high band
+      double MidArray[];   // This array will store the values of the channel's middle band
+      double LowArray[];   // This array will store the values of the channel's low band
       
       startAtBar   = 1;    // get values starting from the last completed bar.
       numberOfBars = 20;   // gat a total of 20 values (for 20 bars starting from bar 1 (last completed))
       
-      if(rangeBars.GetDonchian(HighArray,MidArray,LowArray,startAtBar,numberOfBars))
+      if(rangeBars.GetChannel(HighArray,MidArray,LowArray,startAtBar,numberOfBars))
       {
          //
-         // Apply your Donchian channel logic here...
-         //
-      }
-      
-      //
-      // Getting Bollinger Bands values is done using the
-      // GetBollingerBands(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count) 
-      // method. Example below:
-      //
-      
-      // HighArray[] array will store the values of the high band
-      // MidArray[] array will store the values of the middle band
-      // LowArray[] array will store the values of the low band
-      
-      startAtBar   = 1;    // get values starting from the last completed bar.
-      numberOfBars = 10;   // gat a total of 10 values (for 10 bars starting from bar 1 (last completed))     
-      
-      if(rangeBars.GetBollingerBands(HighArray,MidArray,LowArray,startAtBar,numberOfBars))
-      {
-         //
-         // Apply your Bollinger Bands logic here...
+         // Apply your logic here...
          //
       } 
-
-      //
-      // Getting SuperTrend values is done using the
-      // GetSuperTrend(double &SuperTrendHighArray[], double &SuperTrendArray[], double &SuperTrendLowArray[], int start, int count) 
-      // method. Example below:
-      //
-      
-      // HighArray[] array will store the values of the high SuperTrend line
-      // MidArray[] array will store the values of the SuperTrend value
-      // LowArray[] array will store the values of the low SuperTrend line
-      
-      startAtBar   = 1;   // get values starting from the last completed bar.
-      numberOfBars = 3;   // gat a total of 3 values (for 3 bars starting from bar 1 (last completed))     
-      
-      if(rangeBars.GetSuperTrend(HighArray,MidArray,LowArray,startAtBar,numberOfBars))
-      {
-         //
-         // Apply your SuperTrend logic here...
-         //
-      } 
-      
    } 
 }

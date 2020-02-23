@@ -1,48 +1,48 @@
-//+------------------------------------------------------------------+
-//|                                         RangeBars.mqh ver:2.03.0 |
-//|                                        Copyright 2017, AZ-iNVEST |
-//|                                          http://www.az-invest.eu |
-//+------------------------------------------------------------------+
-#property copyright "Copyright 2017, AZ-iNVEST"
+#property copyright "Copyright 2018-2020, Level Up Software"
 #property link      "http://www.az-invest.eu"
 
-//#define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay213"
-#define RANGEBAR_INDICATOR_NAME "Market\\Range Bars Charting" 
+#ifdef DEVELOPER_VERSION
+   #define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay300" 
+#else
+   #define RANGEBAR_INDICATOR_NAME "Market\\Range Bars Charting" 
+#endif
 
 #define RANGEBAR_OPEN            00
 #define RANGEBAR_HIGH            01
 #define RANGEBAR_LOW             02
 #define RANGEBAR_CLOSE           03 
 #define RANGEBAR_BAR_COLOR       04
-#define RANGEBAR_MA1             05
-#define RANGEBAR_MA2             06
-#define RANGEBAR_MA3             07
-#define RANGEBAR_CHANNEL_HIGH    08
-#define RANGEBAR_CHANNEL_MID     09
-#define RANGEBAR_CHANNEL_LOW     10
-#define RANGEBAR_BAR_OPEN_TIME   11
-#define RANGEBAR_TICK_VOLUME     12
-#define RANGEBAR_REAL_VOLUME     13
-#define RANGEBAR_BUY_VOLUME      14
-#define RANGEBAR_SELL_VOLUME     15
-#define RANGEBAR_BUYSELL_VOLUME  16
+#define RANGEBAR_SESSION_RECT_H  05
+#define RANGEBAR_SESSION_RECT_L  06
+#define RANGEBAR_MA1             07
+#define RANGEBAR_MA2             08
+#define RANGEBAR_MA3             09
+#define RANGEBAR_MA4             10
+#define RANGEBAR_CHANNEL_HIGH    11
+#define RANGEBAR_CHANNEL_MID     12
+#define RANGEBAR_CHANNEL_LOW     13
+#define RANGEBAR_BAR_OPEN_TIME   14
+#define RANGEBAR_TICK_VOLUME     15
+#define RANGEBAR_REAL_VOLUME     16
+#define RANGEBAR_BUY_VOLUME      17
+#define RANGEBAR_SELL_VOLUME     18
+#define RANGEBAR_BUYSELL_VOLUME  19
+#define RANGEBAR_RUNTIME_ID      20
 
-#include <AZ-INVEST/SDK/RangeBarSettings.mqh>
+#include <az-invest/sdk/RangeBarCustomChartSettings.mqh>
 
 class RangeBars
 {
    private:
    
-      RangeBarSettings * rangeBarSettings;
+      CRangeBarCustomChartSettigns * rangeBarSettings;
 
-      //
-      //  Median renko indicator handle
-      //
-      
-      int rangeBarsHandle;
+      int rangeBarsHandle; // range bar indicator handle
       string rangeBarsSymbol;
       bool usedByIndicatorOnRangeBarChart;
    
+      datetime prevBarTime;      
+
    public:
       
       RangeBars();   
@@ -53,55 +53,74 @@ class RangeBars
       int Init();
       void Deinit();
       bool Reload();
-      
+      void ReleaseHandle();
+
       int GetHandle(void) { return rangeBarsHandle; };
+      double GetRuntimeId();
+      
+      bool IsNewBar();
+      
       bool GetMqlRates(MqlRates &ratesInfoArray[], int start, int count);
       bool GetBuySellVolumeBreakdown(double &buy[], double &sell[], double &buySell[], int start, int count);      
+      bool GetMA(int MaBufferId, double &MA[], int start, int count);
+      bool GetChannel(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count);
+      
+      // The following 6 functions are deprecated, please use GetMA & GetChannelData functions instead
       bool GetMA1(double &MA[], int start, int count);
       bool GetMA2(double &MA[], int start, int count);
       bool GetMA3(double &MA[], int start, int count);
       bool GetDonchian(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count);
       bool GetBollingerBands(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count);
       bool GetSuperTrend(double &SuperTrendHighArray[], double &SuperTrendArray[], double &SuperTrendLowArray[], int start, int count); 
-      
-      bool IsNewBar();
+      //
       
    private:
 
-      bool GetChannel(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count);
       int GetIndicatorHandle(void);
+      bool GetChannelData(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count);
 };
 
 RangeBars::RangeBars(void)
 {
 #define CONSTRUCTOR1
-   rangeBarSettings = new RangeBarSettings();
+   rangeBarSettings = new CRangeBarCustomChartSettigns();
    rangeBarsHandle = INVALID_HANDLE;
    rangeBarsSymbol = _Symbol;
    usedByIndicatorOnRangeBarChart = false;
+   prevBarTime = 0;
 }
 
 RangeBars::RangeBars(bool isUsedByIndicatorOnRangeBarChart)
 {
-   rangeBarSettings = new RangeBarSettings();
+   rangeBarSettings = new CRangeBarCustomChartSettigns();
    rangeBarsHandle = INVALID_HANDLE;
    rangeBarsSymbol = _Symbol;
    usedByIndicatorOnRangeBarChart = isUsedByIndicatorOnRangeBarChart;
+   prevBarTime = 0;
 }
 
 RangeBars::RangeBars(string symbol)
 {
 #define CONSTRUCTOR2
-   rangeBarSettings = new RangeBarSettings();
+   rangeBarSettings = new CRangeBarCustomChartSettigns();
    rangeBarsHandle = INVALID_HANDLE;
    rangeBarsSymbol = symbol;
    usedByIndicatorOnRangeBarChart = false;
+   prevBarTime = 0;
 }
 
 RangeBars::~RangeBars(void)
 {
    if(rangeBarSettings != NULL)
       delete rangeBarSettings;
+}
+
+void RangeBars::ReleaseHandle()
+{ 
+   if(rangeBarsHandle != INVALID_HANDLE)
+   {
+      IndicatorRelease(rangeBarsHandle); 
+   }
 }
 
 //
@@ -117,6 +136,9 @@ int RangeBars::Init()
          //
          // Indicator on RangeBar chart uses the values of the RangeBar chart for calculations
          //      
+         
+         IndicatorRelease(rangeBarsHandle);
+         
          rangeBarsHandle = GetIndicatorHandle();
          return rangeBarsHandle;
       }
@@ -157,28 +179,21 @@ int RangeBars::Init()
             //  Load settings from EA inputs
             //
             rangeBarSettings.Load();
-         #else
-            //
-            //  Save indicator inputs for use by EA attached to same chart.
-            //
-            rangeBarSettings.Save();
          #endif
       }
    }   
 
-   RANGEBAR_SETTINGS s = rangeBarSettings.GetRangeBarSettings();         
+   RANGEBAR_SETTINGS s = rangeBarSettings.GetCustomChartSettings();         
    CHART_INDICATOR_SETTINGS cis = rangeBarSettings.GetChartIndicatorSettings(); 
 
-   //RangeBarSettings.Debug();
-   
-   rangeBarsHandle = iCustom(this.rangeBarsSymbol,_Period,RANGEBAR_INDICATOR_NAME, 
+   rangeBarsHandle = iCustom(this.rangeBarsSymbol, _Period, RANGEBAR_INDICATOR_NAME, 
                                        s.barSizeInTicks,
                                        s.atrEnabled,
                                        //s.atrTimeFrame,
                                        s.atrPeriod,
                                        s.atrPercentage,
-                                       s.showNumberOfDays,
-                                       s.resetOpenOnNewTradingDay,
+                                       s.showNumberOfDays, s.resetOpenOnNewTradingDay,
+                                       TradingSessionTime,
                                        TopBottomPaddingPercentage,
                                        showPivots,
                                        pivotPointCalculationType,
@@ -188,55 +203,57 @@ int RangeBars::Init()
                                        PDHColor,
                                        PDLColor,
                                        PDCColor,   
-                                       showNextBarLevels,
-                                       HighThresholdIndicatorColor,
-                                       LowThresholdIndicatorColor,
                                        showCurrentBarOpenTime,
-                                       InfoTextColor,
-                                       NewBarAlert,
-                                       ReversalBarAlert,
-                                       MaCrossAlert,
-                                       UseAlertWindow,
-                                       UseSound,    
-                                       UsePushNotifications,
+                                       AlertMeWhen,
+                                       AlertNotificationType,
                                        SoundFileBull,
                                        SoundFileBear,
                                        cis.MA1on, 
+                                       cis.MA1lineType,
                                        cis.MA1period,
                                        cis.MA1method,
                                        cis.MA1applyTo,
                                        cis.MA1shift,
-                                       cis.MA2on,
+                                       cis.MA1priceLabel,
+                                       cis.MA2on, 
+                                       cis.MA2lineType,
                                        cis.MA2period,
                                        cis.MA2method,
                                        cis.MA2applyTo,
                                        cis.MA2shift,
-                                       cis.MA3on,
+                                       cis.MA2priceLabel,
+                                       cis.MA3on, 
+                                       cis.MA3lineType,
                                        cis.MA3period,
                                        cis.MA3method,
                                        cis.MA3applyTo,
                                        cis.MA3shift,
+                                       cis.MA3priceLabel,
+                                       cis.MA4on, 
+                                       cis.MA4lineType,
+                                       cis.MA4period,
+                                       cis.MA4method,
+                                       cis.MA4applyTo,
+                                       cis.MA4shift,
+                                       cis.MA4priceLabel,
                                        cis.ShowChannel,
-                                       "",
-                                       cis.DonchianPeriod,
-                                       cis.BBapplyTo,
-                                       cis.BollingerBandsPeriod,
-                                       cis.BollingerBandsDeviations,
-                                       cis.SuperTrendPeriod,
-                                       cis.SuperTrendMultiplier,
-                                       "",
-                                       DisplayAsBarChart,
-                                       ShiftObj,
-                                       UsedInEA);
-
+                                       cis.ChannelPeriod,
+                                       cis.ChannelAtrPeriod,
+                                       cis.ChannelAppliedPrice,
+                                       cis.ChannelMultiplier,
+                                       cis.ChannelBandsDeviations, 
+                                       cis.ChannelPriceLabel,
+                                       cis.ChannelMidPriceLabel,
+                                       true); // used in EA
+                                       // DisplayAsBarChart & ShiftObj let at defaults
       
     if(rangeBarsHandle == INVALID_HANDLE)
     {
-      Print("RangeBar indicator init failed on error ",GetLastError());
+      Print(RANGEBAR_INDICATOR_NAME+" indicator init failed on error ",GetLastError());
     }
     else
     {
-      Print("RangeBar indicator init OK");
+      Print(RANGEBAR_INDICATOR_NAME+" indicator init OK");
     }
      
     return rangeBarsHandle;
@@ -248,14 +265,36 @@ int RangeBars::Init()
 
 bool RangeBars::Reload()
 {
-   if(rangeBarSettings.Changed())
+   bool actionNeeded = false;
+   int temp = GetIndicatorHandle();
+   
+   if(temp != rangeBarsHandle)
    {
-      if(Init() == INVALID_HANDLE)
-         return false;
-      
-      return true;
+      IndicatorRelease(rangeBarsHandle); 
+      rangeBarsHandle = INVALID_HANDLE;
+
+      actionNeeded = true;
    }
    
+   if(rangeBarSettings.Changed(GetRuntimeId()))
+   {
+      actionNeeded = true;      
+   }
+   
+   if(actionNeeded)
+   {
+      if(rangeBarsHandle != INVALID_HANDLE)
+      {
+         IndicatorRelease(rangeBarsHandle); 
+         rangeBarsHandle = INVALID_HANDLE;
+      }
+
+      if(Init() == INVALID_HANDLE)
+         return false;
+         
+      return true;
+   }    
+
    return false;
 }
 
@@ -271,9 +310,9 @@ void RangeBars::Deinit()
    if(!usedByIndicatorOnRangeBarChart)
    {
       if(IndicatorRelease(rangeBarsHandle))
-         Print("RangeBar indicator handle released");
+         Print(RANGEBAR_INDICATOR_NAME+" indicator handle released");
       else 
-         Print("Failed to release RangeBar indicator handle");
+         Print("Failed to release "+RANGEBAR_INDICATOR_NAME+" indicator handle");
    }
 }
 
@@ -283,13 +322,13 @@ void RangeBars::Deinit()
 
 bool RangeBars::IsNewBar()
 {
-   MqlRates currentBar[1];
-   static datetime prevBarTime;
-   
+   MqlRates currentBar[1];   
    GetMqlRates(currentBar,0,1);
    
    if(currentBar[0].time == 0)
+   {
       return false;
+   }
    
    if(prevBarTime < currentBar[0].time)
    {
@@ -297,7 +336,8 @@ bool RangeBars::IsNewBar()
       return true;
    }
 
-   return false;}
+   return false;
+}
 
 //
 // Get "count" Renko MqlRates into "ratesInfoArray[]" array starting from "start" bar  
@@ -380,23 +420,12 @@ bool RangeBars::GetBuySellVolumeBreakdown(double &buy[], double &sell[], double 
    if(ArrayResize(bs,count) == -1)
       return false;
 
-#ifdef P_RANGEBAR_BR
-   #ifdef P_RANGEBAR_BR_PRO
    if(CopyBuffer(rangeBarsHandle,RANGEBAR_BUY_VOLUME,start,count,b) == -1)
       return false;
    if(CopyBuffer(rangeBarsHandle,RANGEBAR_SELL_VOLUME,start,count,s) == -1)
       return false;
    if(CopyBuffer(rangeBarsHandle,RANGEBAR_BUYSELL_VOLUME,start,count,bs) == -1)
       return false;
-   #endif
-#else
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_BUY_VOLUME,start,count,b) == -1)
-      return false;
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_SELL_VOLUME,start,count,s) == -1)
-      return false;
-   if(CopyBuffer(rangeBarsHandle,RANGEBAR_BUYSELL_VOLUME,start,count,bs) == -1)
-      return false;
-#endif
 
    if(ArrayResize(buy,count) == -1)
       return false; 
@@ -418,16 +447,48 @@ bool RangeBars::GetBuySellVolumeBreakdown(double &buy[], double &sell[], double 
    ArrayFree(bs);
    
    return true;
-
-
 }
 
+//
+// Get "count" values for MaBufferId buffer into "MA[]" array starting from "start" bar  
+//
+
+bool RangeBars::GetMA(int MaBufferId, double &MA[], int start, int count)
+{
+   double tempMA[];
+   if(ArrayResize(tempMA, count) == -1)
+      return false;
+
+   if(ArrayResize(MA, count) == -1)
+      return false;
+   
+   if(MaBufferId != RANGEBAR_MA1 && MaBufferId != RANGEBAR_MA2 && MaBufferId != RANGEBAR_MA3 && MaBufferId != RANGEBAR_MA4)
+   {
+      Print("Incorrect MA buffer id specified in "+__FUNCTION__);
+      return false;
+   }
+   
+   if(CopyBuffer(rangeBarsHandle, MaBufferId,start,count,tempMA) == -1)
+   {
+      return false;
+   }
+   
+   for(int i=0; i<count; i++)
+   {
+      MA[count-1-i] = tempMA[i];
+   }
+
+   ArrayFree(tempMA);      
+   return true;
+}
 //
 // Get "count" MovingAverage1 values into "MA[]" array starting from "start" bar  
 //
 
 bool RangeBars::GetMA1(double &MA[], int start, int count)
 {
+   Print(__FUNCTION__+" is deprecated, please use GetMA instead");
+   
    double tempMA[];
    if(ArrayResize(tempMA,count) == -1)
       return false;
@@ -453,6 +514,8 @@ bool RangeBars::GetMA1(double &MA[], int start, int count)
 
 bool RangeBars::GetMA2(double &MA[], int start, int count)
 {
+   Print(__FUNCTION__+" is deprecated, please use GetMA instead");
+   
    double tempMA[];
    if(ArrayResize(tempMA,count) == -1)
       return false;
@@ -478,6 +541,8 @@ bool RangeBars::GetMA2(double &MA[], int start, int count)
 
 bool RangeBars::GetMA3(double &MA[], int start, int count)
 {
+   Print(__FUNCTION__+" is deprecated, please use GetMA instead");
+   
    double tempMA[];
    if(ArrayResize(tempMA,count) == -1)
       return false;
@@ -498,12 +563,13 @@ bool RangeBars::GetMA3(double &MA[], int start, int count)
 }
 
 //
-// Get "count" Renko Donchian channel values into "HighArray[]", "MidArray[]", and "LowArray[]" arrays starting from "start" bar  
+// Get "count" Donchian channel values into "HighArray[]", "MidArray[]", and "LowArray[]" arrays starting from "start" bar  
 //
 
 bool RangeBars::GetDonchian(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count)
 {
-   return GetChannel(HighArray,MidArray,LowArray,start,count);
+   Print(__FUNCTION__+" is deprecated, please use GetChannelData instead");
+   return GetChannelData(HighArray,MidArray,LowArray,start,count);
 }
 
 //
@@ -512,7 +578,8 @@ bool RangeBars::GetDonchian(double &HighArray[], double &MidArray[], double &Low
 
 bool RangeBars::GetBollingerBands(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count)
 {
-   return GetChannel(HighArray,MidArray,LowArray,start,count);
+   Print(__FUNCTION__+" is deprecated, please use GetChannelData instead");
+   return GetChannelData(HighArray,MidArray,LowArray,start,count);
 }
 
 //
@@ -521,21 +588,27 @@ bool RangeBars::GetBollingerBands(double &HighArray[], double &MidArray[], doubl
 
 bool RangeBars::GetSuperTrend(double &SuperTrendHighArray[], double &SuperTrendArray[], double &SuperTrendLowArray[], int start, int count)
 {
-   return GetChannel(SuperTrendHighArray,SuperTrendArray,SuperTrendLowArray,start,count);
+   Print(__FUNCTION__+" is deprecated, please use GetChannel function instead");
+   return GetChannelData(SuperTrendHighArray,SuperTrendArray,SuperTrendLowArray,start,count);
 }
 
+//
+// Get Channel values into "HighArray[]", "MidArray[]", and "LowArray[]" arrays starting from "start" bar  
+//
+
+bool RangeBars::GetChannel(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count)
+{
+   return GetChannelData(HighArray,MidArray,LowArray,start,count);
+}
 
 //
 // Private function used by GetRenkoDonchian and GetRenkoBollingerBands functions to get data
 //
 
-bool RangeBars::GetChannel(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count)
+bool RangeBars::GetChannelData(double &HighArray[], double &MidArray[], double &LowArray[], int start, int count)
 {
    double tempH[], tempM[], tempL[];
 
-#ifdef P_RANGEBAR_BR
-   return false;
-#else
    if(ArrayResize(tempH,count) == -1)
       return false;
    if(ArrayResize(tempM,count) == -1)
@@ -570,7 +643,6 @@ bool RangeBars::GetChannel(double &HighArray[], double &MidArray[], double &LowA
    ArrayFree(tempL);
    
    return true;
-#endif
 }
 
 int RangeBars::GetIndicatorHandle(void)
@@ -584,12 +656,22 @@ int RangeBars::GetIndicatorHandle(void)
       iName = ChartIndicatorName(0,0,j);
       if(StringFind(iName,CUSTOM_CHART_NAME) != -1)
       {
-         Print("Using handle of "+iName);
          return ChartIndicatorGet(0,0,iName);   
       }   
+      
       j++;
    }
    
    Print("Failed getting handle of "+CUSTOM_CHART_NAME);
    return INVALID_HANDLE;
+}
+
+double RangeBars::GetRuntimeId()
+{
+   double runtimeId[1];
+    
+   if(CopyBuffer(rangeBarsHandle, RANGEBAR_RUNTIME_ID, 0, 1, runtimeId) == -1)
+      return -1;
+
+   return runtimeId[0];   
 }

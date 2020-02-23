@@ -24,7 +24,7 @@ int       ExtRocPeriod;
 //
 
 #include <AZ-INVEST/SDK/RangeBarIndicator.mqh>
-RangeBarIndicator rangeBarsIndicator;
+RangeBarIndicator customChartIndicator;
 
 //
 //
@@ -57,7 +57,7 @@ void OnInit()
    //  Indicator uses Price[] array for calculations so we need to set this in the MedianRenkoIndicator class
    //
   
-   rangeBarsIndicator.SetUseAppliedPriceFlag(PRICE_CLOSE);
+   customChartIndicator.SetUseAppliedPriceFlag(PRICE_CLOSE);
    
    //
    //
@@ -80,36 +80,14 @@ int OnCalculate(const int rates_total,const int prev_calculated,
 
   {
    //
-   // Process data through MedianRenko indicator
-   //
    
-   if(!rangeBarsIndicator.OnCalculate(rates_total,prev_calculated,Time))
+   if(!customChartIndicator.OnCalculate(rates_total,prev_calculated,Time,Close))
       return(0);
    
-   //
-   // Make the following modifications in the code below:
-   //
-   // rangeBarsIndicator.GetPrevCalculated() should be used instead of prev_calculated
-   //
-   // rangeBarsIndicator.Open[] should be used instead of open[]
-   // rangeBarsIndicator.Low[] should be used instead of low[]
-   // rangeBarsIndicator.High[] should be used instead of high[]
-   // rangeBarsIndicator.Close[] should be used instead of close[]
-   //
-   // rangeBarsIndicator.IsNewBar (true/false) informs you if a renko brick completed
-   //
-   // rangeBarsIndicator.Time[] shold be used instead of Time[] for checking the renko bar time.
-   // (!) rangeBarsIndicator.SetGetTimeFlag() must be called in OnInit() for rangeBarsIndicator.Time[] to be used
-   //
-   // rangeBarsIndicator.Tick_volume[] should be used instead of TickVolume[]
-   // rangeBarsIndicator.Real_volume[] should be used instead of Volume[]
-   // (!) rangeBarsIndicator.SetGetVolumesFlag() must be called in OnInit() for Tick_volume[] & Real_volume[] to be used
-   //
-   // rangeBarsIndicator.Price[] should be used instead of Price[]
-   // (!) rangeBarsIndicator.SetUseAppliedPriceFlag(ENUM_APPLIED_PRICE _applied_price) must be called in OnInit() for rangeBarsIndicator.Price[] to be used
-   //
+   if(!customChartIndicator.BufferSynchronizationCheck(Close))
+      return(0);
    
-   int _prev_calculated = rangeBarsIndicator.GetPrevCalculated();
+   int _prev_calculated = customChartIndicator.GetPrevCalculated();
    
    //
    //
@@ -125,10 +103,10 @@ int OnCalculate(const int rates_total,const int prev_calculated,
 //--- the main loop of calculations
    for(int i=pos;i<rates_total && !IsStopped();i++)
      {
-      if(rangeBarsIndicator.Price[i]==0.0)
+      if(customChartIndicator.Price[i]==0.0)
          ExtRocBuffer[i]=0.0;
       else
-         ExtRocBuffer[i]=(rangeBarsIndicator.Price[i]-rangeBarsIndicator.Price[i-ExtRocPeriod])/rangeBarsIndicator.Price[i]*100;
+         ExtRocBuffer[i]=(customChartIndicator.Price[i]-customChartIndicator.Price[i-ExtRocPeriod])/customChartIndicator.Price[i]*100;
      }
 //--- OnCalculate done. Return new prev_calculated.
    return(rates_total);

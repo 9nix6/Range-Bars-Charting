@@ -67,7 +67,7 @@ double Level[];
 //
 
 #include <AZ-INVEST/SDK/RangeBarIndicator.mqh>
-RangeBarIndicator rangeBarsIndicator;
+RangeBarIndicator customChartIndicator;
 
 //
 //
@@ -98,7 +98,7 @@ int OnInit()
             
    IndicatorSetString(INDICATOR_SHORTNAME," VEMA Wilder's DMI ("+string(AdxPeriod)+")");
    
-   rangeBarsIndicator.SetGetVolumesFlag();
+   customChartIndicator.SetGetVolumesFlag();
    
    return(0);
 }
@@ -136,39 +136,15 @@ int OnCalculate(const int rates_total,
                 const int& spread[])
 {
    //
-   // Process data through MedianRenko indicator
-   //
    
-   if(!rangeBarsIndicator.OnCalculate(rates_total,prev_calculated,time))
+   if(!customChartIndicator.OnCalculate(rates_total,prev_calculated,time,close))
       return(0);
    
-   //
-   // Make the following modifications in the code below:
-   //
-   // rangeBarsIndicator.GetPrevCalculated() should be used instead of prev_calculated
-   //
-   // rangeBarsIndicator.Open[] should be used instead of open[]
-   // rangeBarsIndicator.Low[] should be used instead of low[]
-   // rangeBarsIndicator.High[] should be used instead of high[]
-   // rangeBarsIndicator.Close[] should be used instead of close[]
-   //
-   // rangeBarsIndicator.IsNewBar (true/false) informs you if a renko brick completed
-   //
-   // rangeBarsIndicator.Time[] shold be used instead of Time[] for checking the renko bar time.
-   // (!) rangeBarsIndicator.SetGetTimeFlag() must be called in OnInit() for rangeBarsIndicator.Time[] to be used
-   //
-   // rangeBarsIndicator.Tick_volume[] should be used instead of TickVolume[]
-   // rangeBarsIndicator.Real_volume[] should be used instead of Volume[]
-   // (!) rangeBarsIndicator.SetGetVolumesFlag() must be called in OnInit() for Tick_volume[] & Real_volume[] to be used
-   //
-   // rangeBarsIndicator.Price[] should be used instead of Price[]
-   // (!) rangeBarsIndicator.SetUseAppliedPriceFlag(ENUM_APPLIED_PRICE _applied_price) must be called in OnInit() for rangeBarsIndicator.Price[] to be used
-   //
+   if(!customChartIndicator.BufferSynchronizationCheck(close))
+      return(0);
    
-   int _prev_calculated = rangeBarsIndicator.GetPrevCalculated();
+   int _prev_calculated = customChartIndicator.GetPrevCalculated();
    
-   //
-   //
    //     
 
    if (ArrayRange(averages,0)!=rates_total) ArrayResize(averages,rates_total);
@@ -182,16 +158,16 @@ int OnCalculate(const int rates_total,
    double sf = 1.0/(double)AdxPeriod;
    for (int i=(int)MathMax(_prev_calculated-1,1); i<rates_total; i++)
    {
-         double currTR  = MathMax(rangeBarsIndicator.High[i],rangeBarsIndicator.Close[i-1])-MathMin(rangeBarsIndicator.Low[i],rangeBarsIndicator.Close[i-1]);
-         double DeltaHi = rangeBarsIndicator.High[i] - rangeBarsIndicator.High[i-1];
-         double DeltaLo = rangeBarsIndicator.Low[i-1] - rangeBarsIndicator.Low[i];
+         double currTR  = MathMax(customChartIndicator.High[i],customChartIndicator.Close[i-1])-MathMin(customChartIndicator.Low[i],customChartIndicator.Close[i-1]);
+         double DeltaHi = customChartIndicator.High[i] - customChartIndicator.High[i-1];
+         double DeltaLo = customChartIndicator.Low[i-1] - customChartIndicator.Low[i];
          double plusDM  = 0.00;
          double minusDM = 0.00;
          double vol;
          switch(VolumeType)
             {
-               case vol_ticks: vol = (double)rangeBarsIndicator.Tick_volume[i]; break;
-               case vol_real:  vol = (double)rangeBarsIndicator.Real_volume[i]; break;
+               case vol_ticks: vol = (double)customChartIndicator.Tick_volume[i]; break;
+               case vol_real:  vol = (double)customChartIndicator.Real_volume[i]; break;
                default:        vol = 1;
             }
             if ((DeltaHi > DeltaLo) && (DeltaHi > 0)) plusDM  = DeltaHi;

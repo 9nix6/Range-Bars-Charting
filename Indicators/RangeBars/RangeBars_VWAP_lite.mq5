@@ -61,7 +61,7 @@ enum PRICE_TYPE
 //
 
 #include <AZ-INVEST/SDK/RangeBarIndicator.mqh>
-RangeBarIndicator rangeBarsIndicator;
+RangeBarIndicator customChartIndicator;
 
 #define VWAP_Daily "cc__VWAP_Daily"
 #define VWAP_Weekly "cc__VWAP_Weekly"
@@ -169,8 +169,8 @@ int OnInit()
       ObjectSetString(0,VWAP_Monthly,OBJPROP_TEXT," ");
      }
 
-   rangeBarsIndicator.SetGetVolumesFlag();
-   rangeBarsIndicator.SetGetTimeFlag();
+   customChartIndicator.SetGetVolumesFlag();
+   customChartIndicator.SetGetTimeFlag();
    
    return(INIT_SUCCEEDED);
   }
@@ -199,36 +199,16 @@ int OnCalculate(const int       rates_total,
   {
 
    //
-   // Process data through MedianRenko indicator
+   // Process data through Tick Chat indicator
    //
 
-   if(!rangeBarsIndicator.OnCalculate(rates_total,prev_calculated,time))
+   if(!customChartIndicator.OnCalculate(rates_total,prev_calculated,time,close))
+      return(0);
+      
+   if(!customChartIndicator.BufferSynchronizationCheck(close))
       return(0);
    
-   //
-   // Make the following modifications in the code below:
-   //
-   // rangeBarsIndicator.GetPrevCalculated() should be used instead of prev_calculated
-   //
-   // rangeBarsIndicator.Open[] should be used instead of open[]
-   // rangeBarsIndicator.Low[] should be used instead of low[]
-   // rangeBarsIndicator.High[] should be used instead of high[]
-   // rangeBarsIndicator.Close[] should be used instead of close[]
-   //
-   // rangeBarsIndicator.IsNewBar (true/false) informs you if a renko brick completed
-   //
-   // rangeBarsIndicator.Time[] shold be used instead of Time[] for checking the renko bar time.
-   // (!) rangeBarsIndicator.SetGetTimeFlag() must be called in OnInit() for rangeBarsIndicator.Time[] to be used
-   //
-   // rangeBarsIndicator.Tick_volume[] should be used instead of TickVolume[]
-   // rangeBarsIndicator.Real_volume[] should be used instead of Volume[]
-   // (!) rangeBarsIndicator.SetGetVolumesFlag() must be called in OnInit() for Tick_volume[] & Real_volume[] to be used
-   //
-   // rangeBarsIndicator.Price[] should be used instead of Price[]
-   // (!) rangeBarsIndicator.SetUseAppliedPriceFlag(ENUM_APPLIED_PRICE _applied_price) must be called in OnInit() for rangeBarsIndicator.Price[] to be used
-   //
-   
-   int _prev_calculated = rangeBarsIndicator.GetPrevCalculated();
+   int _prev_calculated = customChartIndicator.GetPrevCalculated();
    
    //
    //
@@ -240,7 +220,7 @@ int OnCalculate(const int       rates_total,
       LastTimePeriod=PERIOD_CURRENT;
      }
 
-   if(rates_total>_prev_calculated || bIsFirstRun || Calc_Every_Tick || (_prev_calculated == 0) || rangeBarsIndicator.IsNewBar) 
+   if(rates_total>_prev_calculated || bIsFirstRun || Calc_Every_Tick || (_prev_calculated == 0) ||customChartIndicator.IsNewBar) 
      {
       nIdxDaily = 0;
       nIdxWeekly = 0;
@@ -260,22 +240,22 @@ int OnCalculate(const int       rates_total,
          VWAP_Buffer_Weekly[nIdx]=EMPTY_VALUE;
          VWAP_Buffer_Monthly[nIdx]=EMPTY_VALUE;
 
-         if(rangeBarsIndicator.Time[nIdx] < 86400)
+         if(customChartIndicator.Time[nIdx] < 86400)
             continue;
             
-         if(CreateDateTime(DAILY,rangeBarsIndicator.Time[nIdx])!=dtLastDay) 
+         if(CreateDateTime(DAILY,customChartIndicator.Time[nIdx])!=dtLastDay) 
            {
             nIdxDaily=nIdx;
             nSumDailyTPV = 0;
             nSumDailyVol = 0;
            }
-         if(CreateDateTime(WEEKLY,rangeBarsIndicator.Time[nIdx])!=dtLastWeek) 
+         if(CreateDateTime(WEEKLY,customChartIndicator.Time[nIdx])!=dtLastWeek) 
            {
             nIdxWeekly=nIdx;
             nSumWeeklyTPV = 0;
             nSumWeeklyVol = 0;
            }
-         if(CreateDateTime(MONTHLY,rangeBarsIndicator.Time[nIdx])!=dtLastMonth) 
+         if(CreateDateTime(MONTHLY,customChartIndicator.Time[nIdx])!=dtLastMonth) 
            {
             nIdxMonthly=nIdx;
             nSumMonthlyTPV = 0;
@@ -289,45 +269,45 @@ int OnCalculate(const int       rates_total,
          switch(Price_Type) 
            {
             case OPEN:
-               nPriceArr[nIdx]=rangeBarsIndicator.Open[nIdx];
+               nPriceArr[nIdx]=customChartIndicator.Open[nIdx];
                break;
             case CLOSE:
-               nPriceArr[nIdx]=rangeBarsIndicator.Close[nIdx];
+               nPriceArr[nIdx]=customChartIndicator.Close[nIdx];
                break;
             case HIGH:
-               nPriceArr[nIdx]=rangeBarsIndicator.High[nIdx];
+               nPriceArr[nIdx]=customChartIndicator.High[nIdx];
                break;
             case LOW:
-               nPriceArr[nIdx]=rangeBarsIndicator.Low[nIdx];
+               nPriceArr[nIdx]=customChartIndicator.Low[nIdx];
                break;
             case HIGH_LOW:
-               nPriceArr[nIdx]=(rangeBarsIndicator.High[nIdx]+rangeBarsIndicator.Low[nIdx])/2;
+               nPriceArr[nIdx]=(customChartIndicator.High[nIdx]+customChartIndicator.Low[nIdx])/2;
                break;
             case OPEN_CLOSE:
-               nPriceArr[nIdx]=(rangeBarsIndicator.Open[nIdx]+rangeBarsIndicator.Close[nIdx])/2;
+               nPriceArr[nIdx]=(customChartIndicator.Open[nIdx]+customChartIndicator.Close[nIdx])/2;
                break;
             case CLOSE_HIGH_LOW:
-               nPriceArr[nIdx]=(rangeBarsIndicator.Close[nIdx]+rangeBarsIndicator.High[nIdx]+rangeBarsIndicator.Low[nIdx])/3;
+               nPriceArr[nIdx]=(customChartIndicator.Close[nIdx]+customChartIndicator.High[nIdx]+customChartIndicator.Low[nIdx])/3;
                break;
             case OPEN_CLOSE_HIGH_LOW:
-               nPriceArr[nIdx]=(rangeBarsIndicator.Open[nIdx]+rangeBarsIndicator.Close[nIdx]+rangeBarsIndicator.High[nIdx]+rangeBarsIndicator.Low[nIdx])/4;
+               nPriceArr[nIdx]=(customChartIndicator.Open[nIdx]+customChartIndicator.Close[nIdx]+customChartIndicator.High[nIdx]+customChartIndicator.Low[nIdx])/4;
                break;
             default:
-               nPriceArr[nIdx]=(rangeBarsIndicator.Close[nIdx]+rangeBarsIndicator.High[nIdx]+rangeBarsIndicator.Low[nIdx])/3;
+               nPriceArr[nIdx]=(customChartIndicator.Close[nIdx]+customChartIndicator.High[nIdx]+customChartIndicator.Low[nIdx])/3;
                break;
            }
 
-         if((rangeBarsIndicator.Tick_volume[nIdx] > 0) &&  (rangeBarsIndicator.Real_volume[nIdx] == 0))
+         if((customChartIndicator.Tick_volume[nIdx] > 0) &&  (customChartIndicator.Real_volume[nIdx] == 0))
          {
-           // Print("tick vol = "+rangeBarsIndicator.Tick_volume[nIdx]);
-            nTotalTPV[nIdx] = (nPriceArr[nIdx] * rangeBarsIndicator.Tick_volume[nIdx]);
-            nTotalVol[nIdx] = (double)rangeBarsIndicator.Tick_volume[nIdx];
+           // Print("tick vol = "+customChartIndicator.Tick_volume[nIdx]);
+            nTotalTPV[nIdx] = (nPriceArr[nIdx] * customChartIndicator.Tick_volume[nIdx]);
+            nTotalVol[nIdx] = (double)customChartIndicator.Tick_volume[nIdx];
          } 
-         else if(rangeBarsIndicator.Real_volume[nIdx] && rangeBarsIndicator.Tick_volume[nIdx] ) 
+         else if(customChartIndicator.Real_volume[nIdx] && customChartIndicator.Tick_volume[nIdx] ) 
          {
-           // Print("real vol = "+rangeBarsIndicator.Real_volume[nIdx]);
-            nTotalTPV[nIdx] = (nPriceArr[nIdx] * rangeBarsIndicator.Real_volume[nIdx]);
-            nTotalVol[nIdx] = (double)rangeBarsIndicator.Real_volume[nIdx];
+           // Print("real vol = "+customChartIndicator.Real_volume[nIdx]);
+            nTotalTPV[nIdx] = (nPriceArr[nIdx] * customChartIndicator.Real_volume[nIdx]);
+            nTotalVol[nIdx] = (double)customChartIndicator.Real_volume[nIdx];
          }
          
          if(Enable_Daily && (nIdx>=nIdxDaily)) 
@@ -375,9 +355,9 @@ int OnCalculate(const int       rates_total,
               }
            }
 
-         dtLastDay=CreateDateTime(DAILY,rangeBarsIndicator.Time[nIdx]);
-         dtLastWeek=CreateDateTime(WEEKLY,rangeBarsIndicator.Time[nIdx]);
-         dtLastMonth=CreateDateTime(MONTHLY,rangeBarsIndicator.Time[nIdx]);
+         dtLastDay=CreateDateTime(DAILY,customChartIndicator.Time[nIdx]);
+         dtLastWeek=CreateDateTime(WEEKLY,customChartIndicator.Time[nIdx]);
+         dtLastMonth=CreateDateTime(MONTHLY,customChartIndicator.Time[nIdx]);
         }
 
       bIsFirstRun=false;

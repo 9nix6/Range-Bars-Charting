@@ -30,7 +30,7 @@ double    ExtLowesBuffer[];
 //
 
 #include <AZ-INVEST/SDK/RangeBarIndicator.mqh>
-RangeBarIndicator rangeBarsIndicator;
+RangeBarIndicator customChartIndicator;
 
 //
 //
@@ -82,11 +82,13 @@ int OnCalculate(const int rates_total,const int prev_calculated,
    //
    //
       
-   if(!rangeBarsIndicator.OnCalculate(rates_total,prev_calculated,Time))
+   if(!customChartIndicator.OnCalculate(rates_total,prev_calculated,Time,Close))
       return(0);
    
+   if(!customChartIndicator.BufferSynchronizationCheck(Close))
+      return(0);
 
-   int _prev_calculated = rangeBarsIndicator.GetPrevCalculated();
+   int _prev_calculated = customChartIndicator.GetPrevCalculated();
    
    //
    //
@@ -116,8 +118,8 @@ int OnCalculate(const int rates_total,const int prev_calculated,
       double dmax=-1000000.0;
       for(k=i-InpKPeriod+1;k<=i;k++)
         {
-         if(dmin>rangeBarsIndicator.Low[k])  dmin=rangeBarsIndicator.Low[k];
-         if(dmax<rangeBarsIndicator.High[k]) dmax=rangeBarsIndicator.High[k];
+         if(dmin>customChartIndicator.Low[k])  dmin=customChartIndicator.Low[k];
+         if(dmax<customChartIndicator.High[k]) dmax=customChartIndicator.High[k];
         }
       ExtLowesBuffer[i]=dmin;
       ExtHighesBuffer[i]=dmax;
@@ -137,7 +139,7 @@ int OnCalculate(const int rates_total,const int prev_calculated,
       double sumhigh=0.0;
       for(k=(i-InpSlowing+1);k<=i;k++)
         {
-         sumlow +=(rangeBarsIndicator.Close[k]-ExtLowesBuffer[k]);
+         sumlow +=(customChartIndicator.Close[k]-ExtLowesBuffer[k]);
          sumhigh+=(ExtHighesBuffer[k]-ExtLowesBuffer[k]);
         }
       if(sumhigh==0.0) ExtMainBuffer[i]=100.0;
