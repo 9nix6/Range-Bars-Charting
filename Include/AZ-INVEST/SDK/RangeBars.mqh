@@ -194,7 +194,6 @@ int RangeBars::Init()
                                        s.atrPercentage,
                                        s.showNumberOfDays, s.resetOpenOnNewTradingDay,
                                        TradingSessionTime,
-                                       TopBottomPaddingPercentage,
                                        showPivots,
                                        pivotPointCalculationType,
                                        RColor,
@@ -203,11 +202,8 @@ int RangeBars::Init()
                                        PDHColor,
                                        PDLColor,
                                        PDCColor,   
-                                       showCurrentBarOpenTime,
                                        AlertMeWhen,
                                        AlertNotificationType,
-                                       SoundFileBull,
-                                       SoundFileBear,
                                        cis.MA1on, 
                                        cis.MA1lineType,
                                        cis.MA1period,
@@ -245,7 +241,12 @@ int RangeBars::Init()
                                        cis.ChannelPriceLabel,
                                        cis.ChannelMidPriceLabel,
                                        true); // used in EA
-                                       // DisplayAsBarChart & ShiftObj let at defaults
+// TopBottomPaddingPercentage,
+// showCurrentBarOpenTime,
+// SoundFileBull,
+// SoundFileBear,
+// DisplayAsBarChart
+// ShiftObj; all letft at defaults
       
     if(rangeBarsHandle == INVALID_HANDLE)
     {

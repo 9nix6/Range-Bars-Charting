@@ -161,6 +161,9 @@ string NormalizeTime(datetime _dt)
    string minute = (dt.min<10)  ? ("0"+(string)dt.min)  : (string)dt.min;
    string hour   = (dt.hour<10) ? ("0"+(string)dt.hour) : (string)dt.hour;
    
+   if((dt.mon-1) < 0 || (dt.mon-1) > 11)
+      return "*";   
+   
    if(InpDispFormat == DisplayFormat1)
       return ( "'"+(string)dt.day+" "+__months[dt.mon-1]+" "+hour+":"+minute );
    else 
