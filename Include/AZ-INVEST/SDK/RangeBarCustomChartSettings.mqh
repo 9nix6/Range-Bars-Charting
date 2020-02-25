@@ -12,7 +12,7 @@
 #ifdef SHOW_INDICATOR_INPUTS
    #ifdef MQL5_MARKET_DEMO // hardcoded values
    
-      int               barSizeInTicks = 180;                     // Range bar size (in points)
+      int               barSizeInTicks = 180;                     // Range bar size (in ticks)
       ENUM_BOOL         atrEnabled = false;                       // Enable ATR based bar size calculation
       ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;                 // Use ATR period
       int               atrPeriod = 14;                           // ATR period
@@ -23,7 +23,7 @@
    #else // user defined settings
    
    
-      input int               barSizeInTicks = 100;               // Range bar size (in points)
+      input int               barSizeInTicks = 20;                // Range bar size (in ticks)
       input ENUM_BOOL         atrEnabled = false;                 // Enable ATR based bar size calculation
             ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;           // Use ATR period
       input int               atrPeriod = 14;                     // ATR period
@@ -34,7 +34,7 @@
    
    #endif
 #else // don't SHOW_INDICATOR_INPUTS 
-      int               barSizeInTicks = 180;                     // Range bar size (in points)
+      int               barSizeInTicks = 180;                     // Range bar size (in ticks)
       ENUM_BOOL         atrEnabled = false;                       // Enable ATR based bar size calculation
       ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;                 // Use ATR period
       int               atrPeriod = 14;                           // ATR period
