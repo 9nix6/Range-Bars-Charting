@@ -23,7 +23,7 @@
    #else // user defined settings
    
    
-      input int               barSizeInTicks = 20;                // Range bar size (in ticks)
+      input int               barSizeInTicks = 100;                // Range bar size (in ticks)
       input ENUM_BOOL         atrEnabled = false;                 // Enable ATR based bar size calculation
             ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;           // Use ATR period
       input int               atrPeriod = 14;                     // ATR period
