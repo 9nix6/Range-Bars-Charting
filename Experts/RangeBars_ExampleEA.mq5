@@ -26,13 +26,18 @@ input int InpRSIPeriod = 14; // RSI period
 //  Example shown below
 //
 
-RangeBars rangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
+RangeBars *rangeBars = NULL;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
 {
+   if(rangeBars == NULL)
+   {
+      rangeBars = new RangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
+   }
+   
    rangeBars.Init();
    if(rangeBars.GetHandle() == INVALID_HANDLE)
       return(INIT_FAILED);
@@ -48,7 +53,12 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
 {
-   rangeBars.Deinit();
+   if(rangeBars != NULL)
+   {
+      rangeBars.Deinit();
+      delete rangeBars;
+      rangeBars = NULL;
+   }
    
    //
    //  your custom code goes here...

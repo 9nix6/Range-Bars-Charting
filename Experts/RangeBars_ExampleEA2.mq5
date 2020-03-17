@@ -8,6 +8,7 @@
 // Helper functions for placing market orders.
 //
 
+#define DEVELOPER_VERSION
 #include <AZ-INVEST/SDK/TradeFunctions.mqh>
 
 //
@@ -52,14 +53,19 @@ ulong currentTicket;
 //  Example shown below
 //
 
-RangeBars rangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
-CMarketOrder * marketOrder;
+RangeBars      *rangeBars = NULL;
+CMarketOrder   *marketOrder = NULL;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
 {
+   if(rangeBars == NULL)
+   {
+      rangeBars = new RangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
+   }
+   
    rangeBars.Init();
    if(rangeBars.GetHandle() == INVALID_HANDLE)
       return(INIT_FAILED);
@@ -79,8 +85,12 @@ int OnInit()
       params.busyTimeout_ms = InpBusyTimeout_ms; 
       params.requoteTimeout_ms = InpRequoteTimeout_ms;         
    }
-   marketOrder = new CMarketOrder(params);
-  
+   
+   if(marketOrder == NULL)
+   {
+      marketOrder = new CMarketOrder(params);
+   }
+   
    return(INIT_SUCCEEDED);
 }
 //+------------------------------------------------------------------+
@@ -88,7 +98,16 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
 {
-   rangeBars.Deinit();
+   //
+   // delete RanegBars class
+   //
+      
+   if(rangeBars != NULL)
+   {
+      rangeBars.Deinit();
+      delete rangeBars;
+      rangeBars = NULL;
+   }
    
    //
    //  delete MarketOrder class
@@ -97,6 +116,7 @@ void OnDeinit(const int reason)
    if(marketOrder != NULL)
    {
       delete marketOrder;
+      marketOrder = NULL;
    }
 }
 
