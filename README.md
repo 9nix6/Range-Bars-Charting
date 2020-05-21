@@ -22,3 +22,8 @@ All folders (Experts, Include & Indicators) & sub-folders should be placed in th
 The RangeBars indicator for MT5 can be downloaded from https://www.mql5.com/en/market/product/16762
 
 A version for MT4 is available from https://www.az-invest.eu/rangebars-plug-in-for-metatrader4
+
+## Disclaimer:
+
+All of the EAs and indicators presented in this repository are solely for educational and informational purposes and should not be regarded as advice or an invitation to trade. 
+Application of the techniques, ideas, and suggestions presented in the videos and files of this repository is done at the user’s sole discretion and risk. 
