@@ -4,7 +4,15 @@
 #ifdef DEVELOPER_VERSION
    #define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay300" 
 #else
-   #define RANGEBAR_INDICATOR_NAME "Market\\Range Bars Charting" 
+   #ifdef RANGEBAR_LICENSE
+      #ifdef MQL5_MARKET_VERSION
+         #define RANGEBAR_INDICATOR_NAME "Market\\Range Bars Charting" 
+      #else 
+         #define RANGEBAR_INDICATOR_NAME "RangeBars"
+      #endif   
+   #else  
+      #define RANGEBAR_INDICATOR_NAME "Market\\Range Bars Charting"  
+   #endif
 #endif
 
 #define RANGEBAR_OPEN            00
@@ -188,50 +196,46 @@ int RangeBars::Init()
 
    rangeBarsHandle = iCustom(this.rangeBarsSymbol, _Period, RANGEBAR_INDICATOR_NAME, 
                                        s.barSizeInTicks,
+                                       s.showNumberOfDays,
+                                       "=",
                                        s.atrEnabled,
-                                       //s.atrTimeFrame,
+                                       s.atrTimeFrame,
                                        s.atrPeriod,
                                        s.atrPercentage,
-                                       s.showNumberOfDays, s.resetOpenOnNewTradingDay,
-                                       TradingSessionTime,
+                                       "=",
+                                       s.resetOpenOnNewTradingDay,
+                                       "=",
                                        showPivots,
                                        pivotPointCalculationType,
-                                       RColor,
-                                       PColor,
-                                       SColor,
-                                       PDHColor,
-                                       PDLColor,
-                                       PDCColor,   
+                                       "=",
                                        AlertMeWhen,
                                        AlertNotificationType,
-                                       cis.MA1on, 
+                                       "=",
                                        cis.MA1lineType,
                                        cis.MA1period,
                                        cis.MA1method,
                                        cis.MA1applyTo,
                                        cis.MA1shift,
                                        cis.MA1priceLabel,
-                                       cis.MA2on, 
                                        cis.MA2lineType,
                                        cis.MA2period,
                                        cis.MA2method,
                                        cis.MA2applyTo,
                                        cis.MA2shift,
                                        cis.MA2priceLabel,
-                                       cis.MA3on, 
                                        cis.MA3lineType,
                                        cis.MA3period,
                                        cis.MA3method,
                                        cis.MA3applyTo,
                                        cis.MA3shift,
                                        cis.MA3priceLabel,
-                                       cis.MA4on, 
                                        cis.MA4lineType,
                                        cis.MA4period,
                                        cis.MA4method,
                                        cis.MA4applyTo,
                                        cis.MA4shift,
                                        cis.MA4priceLabel,
+                                       "=",
                                        cis.ShowChannel,
                                        cis.ChannelPeriod,
                                        cis.ChannelAtrPeriod,
@@ -240,6 +244,7 @@ int RangeBars::Init()
                                        cis.ChannelBandsDeviations, 
                                        cis.ChannelPriceLabel,
                                        cis.ChannelMidPriceLabel,
+                                       "=",
                                        true); // used in EA
 // TopBottomPaddingPercentage,
 // showCurrentBarOpenTime,

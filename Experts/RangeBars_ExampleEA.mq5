@@ -5,6 +5,8 @@
 
 input int InpRSIPeriod = 14; // RSI period
 
+//#define DEVELOPER_VERSION // used when I develop ;) should always be commented out
+
 //
 // SHOW_INDICATOR_INPUTS *NEEDS* to be defined, if the sEA needs to be *tested in MT5's backtester*
 // -------------------------------------------------------------------------------------------------

@@ -8,8 +8,9 @@
 // Helper functions for placing market orders.
 //
 
-#define DEVELOPER_VERSION
 #include <AZ-INVEST/SDK/TradeFunctions.mqh>
+
+//#define DEVELOPER_VERSION // used when I develop ;) should always be commented out
 
 //
 //  Inputs
@@ -40,7 +41,7 @@ ulong currentTicket;
 // the RangeBars indicator attached.
 //
 
-#define SHOW_INDICATOR_INPUTS
+//#define SHOW_INDICATOR_INPUTS
 
 //
 // You need to include the RangeBars.mqh header file

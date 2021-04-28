@@ -23,13 +23,16 @@
    #else // user defined settings
    
    
-      input int               barSizeInTicks = 100;                // Range bar size (in ticks)
+      input int         barSizeInTicks = 100;                     // Range bar size (in ticks)
+      input int         showNumberOfDays = 5;                     // Show history for number of days
+
+      input group             "### ATR based bar size calculation"
       input ENUM_BOOL         atrEnabled = false;                 // Enable ATR based bar size calculation
-            ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;           // Use ATR period
+      input ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;           // Use ATR period
       input int               atrPeriod = 14;                     // ATR period
       input int               atrPercentage = 10;                 // Use percentage of ATR
    
-      input int         showNumberOfDays = 5;                     // Show history for number of days
+      input group       "### Chart synchronization"
       input ENUM_BOOL   resetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
    
    #endif
