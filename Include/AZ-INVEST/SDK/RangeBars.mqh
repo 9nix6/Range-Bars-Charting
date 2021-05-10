@@ -1,8 +1,8 @@
-#property copyright "Copyright 2018-2020, Level Up Software"
+#property copyright "Copyright 2018-2021, Level Up Software"
 #property link      "http://www.az-invest.eu"
 
 #ifdef DEVELOPER_VERSION
-   #define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay300" 
+   #define RANGEBAR_INDICATOR_NAME "RangeBars\\RangeBarsOverlay316" 
 #else
    #ifdef RANGEBAR_LICENSE
       #ifdef MQL5_MARKET_VERSION
@@ -193,23 +193,23 @@ int RangeBars::Init()
 
    RANGEBAR_SETTINGS s = rangeBarSettings.GetCustomChartSettings();         
    CHART_INDICATOR_SETTINGS cis = rangeBarSettings.GetChartIndicatorSettings(); 
+   ALERT_INFO_SETTINGS als = rangeBarSettings.GetAlertInfoSettings();
 
    rangeBarsHandle = iCustom(this.rangeBarsSymbol, _Period, RANGEBAR_INDICATOR_NAME, 
-                                       s.barSizeInTicks,
+                                       s.barSize,
+                                       s.barSizeCalcMode,
                                        s.showNumberOfDays,
                                        "=",
-                                       s.atrEnabled,
                                        s.atrTimeFrame,
                                        s.atrPeriod,
-                                       s.atrPercentage,
                                        "=",
                                        s.resetOpenOnNewTradingDay,
                                        "=",
-                                       showPivots,
-                                       pivotPointCalculationType,
+                                       als.showPivots,
+                                       als.pivotPointCalculationType,
                                        "=",
-                                       AlertMeWhen,
-                                       AlertNotificationType,
+                                       InpAlertMeWhen,
+                                       InpAlertNotificationType,
                                        "=",
                                        cis.MA1lineType,
                                        cis.MA1period,

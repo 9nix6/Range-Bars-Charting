@@ -12,38 +12,32 @@
 #ifdef SHOW_INDICATOR_INPUTS
    #ifdef MQL5_MARKET_DEMO // hardcoded values
    
-      int               barSizeInTicks = 180;                     // Range bar size (in ticks)
-      ENUM_BOOL         atrEnabled = false;                       // Enable ATR based bar size calculation
-      ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;                 // Use ATR period
-      int               atrPeriod = 14;                           // ATR period
-      int               atrPercentage = 10;                       // Use percentage of ATR
-      int               showNumberOfDays = 7;                     // Show history for number of days
-      ENUM_BOOL         resetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
+      double                  InpBarSize = 180;                               // Range bar size
+      ENUM_BAR_SIZE_CALC_MODE InpBarSizeCalcMode = BAR_SIZE_ABSOLUTE_TICKS;   // Bar size calculation
+      int                     InpShowNumberOfDays = 7;                        // Show history for number of days
+      ENUM_TIMEFRAMES         InpAtrTimeFrame = PERIOD_D1;                    // ATR timeframe setting
+      int                     InpAtrPeriod = 14;                              // ATR period setting
+      ENUM_BOOL               InpResetOpenOnNewTradingDay = true;             // Synchronize first bar's open on new day
    
    #else // user defined settings
-   
-   
-      input int         barSizeInTicks = 100;                     // Range bar size (in ticks)
-      input int         showNumberOfDays = 5;                     // Show history for number of days
-
-      input group             "### ATR based bar size calculation"
-      input ENUM_BOOL         atrEnabled = false;                 // Enable ATR based bar size calculation
-      input ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;           // Use ATR period
-      input int               atrPeriod = 14;                     // ATR period
-      input int               atrPercentage = 10;                 // Use percentage of ATR
-   
-      input group       "### Chart synchronization"
-      input ENUM_BOOL   resetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
+      
+      input double                  InpBarSize = 100;                            // Range bar size
+      input ENUM_BAR_SIZE_CALC_MODE InpBarSizeCalcMode = BAR_SIZE_ABSOLUTE_TICKS;// Bar size calculation
+      input int                     InpShowNumberOfDays = 5;                     // Show history for number of days
+      input group                   "### ATR bar size calculation settings"
+      input ENUM_TIMEFRAMES         InpAtrTimeFrame = PERIOD_D1;                 // ATR timeframe setting
+      input int                     InpAtrPeriod = 14;                           // ATR period setting   
+      input group                   "### Chart synchronization"
+      input ENUM_BOOL               InpResetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
    
    #endif
 #else // don't SHOW_INDICATOR_INPUTS 
-      int               barSizeInTicks = 180;                     // Range bar size (in ticks)
-      ENUM_BOOL         atrEnabled = false;                       // Enable ATR based bar size calculation
-      ENUM_TIMEFRAMES   atrTimeFrame = PERIOD_D1;                 // Use ATR period
-      int               atrPeriod = 14;                           // ATR period
-      int               atrPercentage = 10;                       // Use percentage of ATR
-      int               showNumberOfDays = 7;                     // Show history for number of days
-      ENUM_BOOL         resetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
+      double                  InpBarSize = 180;                            // Range bar size 
+      ENUM_BAR_SIZE_CALC_MODE InpBarSizeCalcMode = BAR_SIZE_ABSOLUTE_TICKS;// Bar size calculation
+      int                     InpShowNumberOfDays = 7;                     // Show history for number of days
+      ENUM_TIMEFRAMES         InpAtrTimeFrame = PERIOD_D1;                 // ATR timeframe setting
+      int                     InpAtrPeriod = 14;                           // ATR period setting
+      ENUM_BOOL               InpResetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
 #endif
 
 //
@@ -52,15 +46,18 @@
 //
 #include <az-invest/sdk/CustomChartSettingsBase.mqh>
 
+#define SETNAME_BAR_SIZE_CALC_MODE  "barSizeCalcMode"
+#define SETNAME_ATR_TIMEFRAME       "atrTimeFrame"
+#define SETNAME_ATR_PERIOD          "atrPeriod"
+
 struct RANGEBAR_SETTINGS
 {
-   int                  barSizeInTicks;
-   ENUM_BOOL            atrEnabled;
-   ENUM_TIMEFRAMES      atrTimeFrame;
-   int                  atrPeriod;
-   int                  atrPercentage;
-   int                  showNumberOfDays;
-   ENUM_BOOL            resetOpenOnNewTradingDay;  
+   double                  barSize;
+   ENUM_BAR_SIZE_CALC_MODE barSizeCalcMode;
+   ENUM_TIMEFRAMES         atrTimeFrame;
+   int                     atrPeriod;
+   int                     showNumberOfDays;
+   ENUM_BOOL               resetOpenOnNewTradingDay;  
 };
 
 
@@ -109,12 +106,10 @@ uint CRangeBarCustomChartSettigns::CustomChartSettingsFromFile(int file_handle)
 
 void CRangeBarCustomChartSettigns::SetCustomChartSettings()
 {
-   settings.barSizeInTicks = barSizeInTicks;
-   
-   settings.atrEnabled = atrEnabled;
-   settings.atrTimeFrame = atrTimeFrame;
-   settings.atrPeriod = atrPeriod;
-   settings.atrPercentage = atrPercentage;
-   settings.showNumberOfDays = showNumberOfDays;
-   settings.resetOpenOnNewTradingDay = resetOpenOnNewTradingDay;
+   settings.barSize = InpBarSize;   
+   settings.barSizeCalcMode = InpBarSizeCalcMode;
+   settings.showNumberOfDays = InpShowNumberOfDays;
+   settings.atrTimeFrame = InpAtrTimeFrame;
+   settings.atrPeriod = InpAtrPeriod;
+   settings.resetOpenOnNewTradingDay = InpResetOpenOnNewTradingDay;
 }
