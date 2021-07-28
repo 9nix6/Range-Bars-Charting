@@ -15,6 +15,7 @@
       double                  InpBarSize = 180;                               // Range bar size
       ENUM_BAR_SIZE_CALC_MODE InpBarSizeCalcMode = BAR_SIZE_ABSOLUTE_TICKS;   // Bar size calculation
       int                     InpShowNumberOfDays = 7;                        // Show history for number of days
+      datetime                InpShowFromDate = 0;                            // Show history starting from
       ENUM_TIMEFRAMES         InpAtrTimeFrame = PERIOD_D1;                    // ATR timeframe setting
       int                     InpAtrPeriod = 14;                              // ATR period setting
       ENUM_BOOL               InpResetOpenOnNewTradingDay = true;             // Synchronize first bar's open on new day
@@ -24,6 +25,7 @@
       input double                  InpBarSize = 100;                            // Range bar size
       input ENUM_BAR_SIZE_CALC_MODE InpBarSizeCalcMode = BAR_SIZE_ABSOLUTE_TICKS;// Bar size calculation
       input int                     InpShowNumberOfDays = 5;                     // Show history for number of days
+      input datetime                InpShowFromDate = 0;                         // Show history starting from
       input group                   "### ATR bar size calculation settings"
       input ENUM_TIMEFRAMES         InpAtrTimeFrame = PERIOD_D1;                 // ATR timeframe setting
       input int                     InpAtrPeriod = 14;                           // ATR period setting   
@@ -35,6 +37,7 @@
       double                  InpBarSize = 180;                            // Range bar size 
       ENUM_BAR_SIZE_CALC_MODE InpBarSizeCalcMode = BAR_SIZE_ABSOLUTE_TICKS;// Bar size calculation
       int                     InpShowNumberOfDays = 7;                     // Show history for number of days
+      datetime                InpShowFromDate = 0;                         // Show history starting from
       ENUM_TIMEFRAMES         InpAtrTimeFrame = PERIOD_D1;                 // ATR timeframe setting
       int                     InpAtrPeriod = 14;                           // ATR period setting
       ENUM_BOOL               InpResetOpenOnNewTradingDay = true;          // Synchronize first bar's open on new day
@@ -57,6 +60,7 @@ struct RANGEBAR_SETTINGS
    ENUM_TIMEFRAMES         atrTimeFrame;
    int                     atrPeriod;
    int                     showNumberOfDays;
+   datetime                showFromDate;
    ENUM_BOOL               resetOpenOnNewTradingDay;  
 };
 
@@ -109,6 +113,7 @@ void CRangeBarCustomChartSettigns::SetCustomChartSettings()
    settings.barSize = InpBarSize;   
    settings.barSizeCalcMode = InpBarSizeCalcMode;
    settings.showNumberOfDays = InpShowNumberOfDays;
+   settings.showFromDate = InpShowFromDate;
    settings.atrTimeFrame = InpAtrTimeFrame;
    settings.atrPeriod = InpAtrPeriod;
    settings.resetOpenOnNewTradingDay = InpResetOpenOnNewTradingDay;

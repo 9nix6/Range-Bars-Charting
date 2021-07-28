@@ -199,6 +199,7 @@ int RangeBars::Init()
                                        s.barSize,
                                        s.barSizeCalcMode,
                                        s.showNumberOfDays,
+                                       s.showFromDate,
                                        "=",
                                        s.atrTimeFrame,
                                        s.atrPeriod,
@@ -242,8 +243,7 @@ int RangeBars::Init()
                                        cis.ChannelAppliedPrice,
                                        cis.ChannelMultiplier,
                                        cis.ChannelBandsDeviations, 
-                                       cis.ChannelPriceLabel,
-                                       cis.ChannelMidPriceLabel,
+                                       cis.ChannelPriceLabels,
                                        "=",
                                        true); // used in EA
 // TopBottomPaddingPercentage,
