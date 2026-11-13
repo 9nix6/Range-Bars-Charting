@@ -1,4 +1,4 @@
-#property copyright "Copyright 2018-2021, Level Up Software"
+﻿#property copyright "Copyright 2018-2021, Level Up Software"
 #property link      "http://www.az-invest.eu"
 
 #ifdef DEVELOPER_VERSION
@@ -37,7 +37,7 @@
 #define RANGEBAR_BUYSELL_VOLUME  19
 #define RANGEBAR_RUNTIME_ID      20
 
-#include <az-invest/sdk/RangeBarCustomChartSettings.mqh>
+#include <AZ-INVEST/SDK/RangeBarCustomChartSettings.mqh>
 
 class RangeBars
 {
@@ -137,7 +137,7 @@ void RangeBars::ReleaseHandle()
 
 int RangeBars::Init()
 {
-   if(!MQLInfoInteger((int)MQL5_TESTING))
+   if(!MQLInfoInteger((int)MQL_TESTER))
    {
       if(usedByIndicatorOnRangeBarChart) 
       {

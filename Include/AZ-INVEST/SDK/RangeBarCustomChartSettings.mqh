@@ -1,4 +1,4 @@
-#include <AZ-INVEST/SDK/CommonSettings.mqh>
+﻿#include <AZ-INVEST/SDK/CommonSettings.mqh>
 
 #ifdef DEVELOPER_VERSION
    #define CUSTOM_CHART_NAME "RangeBars_TEST"
@@ -47,7 +47,7 @@
 // Remaining settings are located in the include file below.
 // These are common for all custom charts
 //
-#include <az-invest/sdk/CustomChartSettingsBase.mqh>
+#include <AZ-INVEST/SDK/CustomChartSettingsBase.mqh>
 
 #define SETNAME_BAR_SIZE_CALC_MODE  "barSizeCalcMode"
 #define SETNAME_ATR_TIMEFRAME       "atrTimeFrame"
@@ -82,6 +82,7 @@ class CRangeBarCustomChartSettigns : public CCustomChartSettingsBase
    virtual string GetSettingsFileName();
    virtual uint CustomChartSettingsToFile(int handle);
    virtual uint CustomChartSettingsFromFile(int handle);
+   virtual uint CustomChartSettingsSize();
 };
 
 void CRangeBarCustomChartSettigns::CRangeBarCustomChartSettigns()
@@ -106,6 +107,11 @@ uint CRangeBarCustomChartSettigns::CustomChartSettingsToFile(int file_handle)
 uint CRangeBarCustomChartSettigns::CustomChartSettingsFromFile(int file_handle)
 {
    return FileReadStruct(file_handle,this.settings);
+}
+
+uint CRangeBarCustomChartSettigns::CustomChartSettingsSize()
+{
+   return sizeof(this.settings);
 }
 
 void CRangeBarCustomChartSettigns::SetCustomChartSettings()

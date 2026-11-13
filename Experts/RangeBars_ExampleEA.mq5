@@ -1,4 +1,4 @@
-#property copyright "Copyright 2017-2020, Level Up Software"
+﻿#property copyright "Copyright 2017-2020, Level Up Software"
 #property link      "https://www.az-invest.eu"
 #property version   "2.07"
 #property description "Example EA showing the way to use the RangeBars class defined in RangeBars.mqh" 
@@ -37,7 +37,7 @@ int OnInit()
 {
    if(rangeBars == NULL)
    {
-      rangeBars = new RangeBars(MQLInfoInteger((int)MQL5_TESTING) ? false : true);
+      rangeBars = new RangeBars(MQLInfoInteger((int)MQL_TESTER) ? false : true);
    }
    
    rangeBars.Init();
