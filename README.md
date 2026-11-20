@@ -63,10 +63,29 @@ then recompile (**F7**). The mapping:
 > A mismatch here means `iCustom()` is asking for an indicator you do not have installed, which
 > produces an empty chart rather than an error message.
 
+### The EAs have their own switch
+
+`CustomBarConfig.mqh` is read by the indicators only. An EA does not include it, so the line above
+does not change which indicator an EA loads. Each EA in `Experts/` carries its own line near the top:
+
+```c
+//#define RANGEBAR_LICENSE
+```
+
+| You bought | In the EA | Indicator the EA looks for |
+|---|---|---|
+| Range Bars Charting (MQL5 Market) | leave it commented — the default | `Market\Range Bars Charting` |
+| RangeBars for MetaTrader 5 (az-invest.eu) | uncomment it and recompile | `RangeBars` |
+
+With the wrong setting the EA fails to start, and the Strategy Tester reports
+`cannot load custom indicator 'Market\Range Bars Charting' [4802]`. The release archive for each edition
+already has the line set to match.
+
 `CustomBarConfig.mqh` and the two ready-to-trade EAs are shared with the other AZ-INVEST custom
 chart SDKs, so they also carry `#define`s for those products (Renko, Tick & Volume Chart, Seconds Chart, Line Break).
-Leave them as they are: this repository contains the headers for Range Bars only, and the
-`RANGEBAR_LICENSE` / `EA_ON_RANGE_BARS` defines are already selected.
+Leave those as they are: this repository contains the headers for Range Bars only. In
+`CustomBarConfig.mqh` the `RANGEBAR_LICENSE` define is already selected; in the two EAs the
+`EA_ON_RANGE_BARS` define is already selected, and `RANGEBAR_LICENSE` is the line described above.
 
 ## Repository layout
 
