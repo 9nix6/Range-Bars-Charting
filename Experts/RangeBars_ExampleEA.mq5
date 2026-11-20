@@ -8,6 +8,17 @@ input int InpRSIPeriod = 14; // RSI period
 //#define DEVELOPER_VERSION // used when I develop ;) should always be commented out
 
 //
+// EDITION: which RangeBars indicator does this EA load?
+// -------------------------------------------------------------------------------------------------
+// Left commented, the EA loads the MQL5 Market edition ("Market\Range Bars Charting").
+// If you bought the indicator from https://www.az-invest.eu/rangebars-for-metatrader-5
+// uncomment the line below, so the EA loads "RangeBars" instead, and recompile.
+// The switch in CustomBarConfig.mqh does not reach an EA: this line is the one that decides.
+//
+
+//#define RANGEBAR_LICENSE
+
+//
 // SHOW_INDICATOR_INPUTS *NEEDS* to be defined, if the sEA needs to be *tested in MT5's backtester*
 // -------------------------------------------------------------------------------------------------
 // Using '#define SHOW_INDICATOR_INPUTS' will show the RangeBars indicator's inputs 
