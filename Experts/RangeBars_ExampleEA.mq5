@@ -99,7 +99,7 @@ void OnTick()
    
    if(rsiHandle == INVALID_HANDLE)
    {
-      rsiHandle = iCustom(_Symbol, _Period, "RangeBars\\RangeBars_RSI", InpRSIPeriod, true);
+      rsiHandle = iCustom(_Symbol, _Period, "RangeBars\\RSI", InpRSIPeriod, true);
    }
 
    //
